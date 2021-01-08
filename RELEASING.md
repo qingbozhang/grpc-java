@@ -4,9 +4,9 @@ How to Create a Release of GRPC Java (for Maintainers Only)
 Build Environments
 ------------------
 We deploy GRPC to Maven Central under the following systems:
-- Ubuntu 14.04 with Docker 13.03.0 that runs CentOS 6.9
+- Ubuntu 14.04 with Docker 13.03.0 that runs CentOS 7
 - Windows 7 64-bit with Visual Studio
-- Mac OS X 10.12.6
+- Mac OS X 10.14.6
 
 Other systems may also work, but we haven't verified them.
 
@@ -32,10 +32,7 @@ them before continuing, and set them again when resuming.
 $ MAJOR=1 MINOR=7 PATCH=0 # Set appropriately for new release
 $ VERSION_FILES=(
   build.gradle
-  android/build.gradle
-  android-interop-testing/app/build.gradle
   core/src/main/java/io/grpc/internal/GrpcUtil.java
-  cronet/build.gradle
   examples/build.gradle
   examples/pom.xml
   examples/android/clientcache/app/build.gradle
@@ -45,10 +42,13 @@ $ VERSION_FILES=(
   examples/example-alts/build.gradle
   examples/example-gauth/build.gradle
   examples/example-gauth/pom.xml
-  examples/example-kotlin/build.gradle
-  examples/example-kotlin/android/helloworld/app/build.gradle
+  examples/example-jwt-auth/build.gradle
+  examples/example-jwt-auth/pom.xml
+  examples/example-hostname/build.gradle
+  examples/example-hostname/pom.xml
   examples/example-tls/build.gradle
   examples/example-tls/pom.xml
+  examples/example-xds/build.gradle
   )
 ```
 
@@ -83,8 +83,8 @@ would be used to create all `v1.7` tags (e.g. `v1.7.0`, `v1.7.1`).
      $(git log --pretty=format:%H --grep "^Start $MAJOR.$((MINOR+1)).0 development cycle$" upstream/master)^
    $ git push upstream v$MAJOR.$MINOR.x
    ```
-4. Go to [Travis CI settings](https://travis-ci.org/grpc/grpc-java/settings) and
-   add a _Cron Job_:
+4. Ask a project admin to go to [Travis CI settings](https://travis-ci.org/grpc/grpc-java/settings)
+   and add a _Cron Job_:
    * Branch: `v$MAJOR.$MINOR.x`
    * Interval: `weekly`
    * Options: `Do not run if there has been a build in the last 24h`
@@ -201,7 +201,7 @@ Update version referenced by tutorials
 --------------------------------------
 
 Update the `grpc_java_release_tag` in
-[config.toml](https://github.com/grpc/grpc.io/blob/master/config.toml)
+[config.yaml](https://github.com/grpc/grpc.io/blob/master/config.yaml)
 of the grpc.io repository.
 
 Notify the Community
@@ -225,7 +225,7 @@ Now we need to update gh-pages with the new Javadoc:
 
 ```bash
 git checkout gh-pages
-git pull --ff-only
+git pull --ff-only upstream gh-pages
 rm -r javadoc/
 wget -O grpc-all-javadoc.jar "http://search.maven.org/remotecontent?filepath=io/grpc/grpc-all/$MAJOR.$MINOR.$PATCH/grpc-all-$MAJOR.$MINOR.$PATCH-javadoc.jar"
 unzip -d javadoc grpc-all-javadoc.jar

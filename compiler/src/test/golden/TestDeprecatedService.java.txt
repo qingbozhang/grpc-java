@@ -1,19 +1,6 @@
 package io.grpc.testing.compiler;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  * <pre>
@@ -21,7 +8,7 @@ import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
  * </pre>
  */
 @javax.annotation.Generated(
-    value = "by gRPC proto compiler (version 1.26.0-SNAPSHOT)",
+    value = "by gRPC proto compiler (version 1.36.0-SNAPSHOT)",
     comments = "Source: grpc/testing/compiler/test.proto")
 @java.lang.Deprecated
 public final class TestDeprecatedServiceGrpc {
@@ -66,7 +53,14 @@ public final class TestDeprecatedServiceGrpc {
    * Creates a new async stub that supports all call types for the service
    */
   public static TestDeprecatedServiceStub newStub(io.grpc.Channel channel) {
-    return new TestDeprecatedServiceStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<TestDeprecatedServiceStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<TestDeprecatedServiceStub>() {
+        @java.lang.Override
+        public TestDeprecatedServiceStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new TestDeprecatedServiceStub(channel, callOptions);
+        }
+      };
+    return TestDeprecatedServiceStub.newStub(factory, channel);
   }
 
   /**
@@ -74,7 +68,14 @@ public final class TestDeprecatedServiceGrpc {
    */
   public static TestDeprecatedServiceBlockingStub newBlockingStub(
       io.grpc.Channel channel) {
-    return new TestDeprecatedServiceBlockingStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<TestDeprecatedServiceBlockingStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<TestDeprecatedServiceBlockingStub>() {
+        @java.lang.Override
+        public TestDeprecatedServiceBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new TestDeprecatedServiceBlockingStub(channel, callOptions);
+        }
+      };
+    return TestDeprecatedServiceBlockingStub.newStub(factory, channel);
   }
 
   /**
@@ -82,7 +83,14 @@ public final class TestDeprecatedServiceGrpc {
    */
   public static TestDeprecatedServiceFutureStub newFutureStub(
       io.grpc.Channel channel) {
-    return new TestDeprecatedServiceFutureStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<TestDeprecatedServiceFutureStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<TestDeprecatedServiceFutureStub>() {
+        @java.lang.Override
+        public TestDeprecatedServiceFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new TestDeprecatedServiceFutureStub(channel, callOptions);
+        }
+      };
+    return TestDeprecatedServiceFutureStub.newStub(factory, channel);
   }
 
   /**
@@ -101,14 +109,14 @@ public final class TestDeprecatedServiceGrpc {
     @java.lang.Deprecated
     public void deprecatedMethod(io.grpc.testing.compiler.Test.SimpleRequest request,
         io.grpc.stub.StreamObserver<io.grpc.testing.compiler.Test.SimpleResponse> responseObserver) {
-      asyncUnimplementedUnaryCall(getDeprecatedMethodMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getDeprecatedMethodMethod(), responseObserver);
     }
 
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getDeprecatedMethodMethod(),
-            asyncUnaryCall(
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 io.grpc.testing.compiler.Test.SimpleRequest,
                 io.grpc.testing.compiler.Test.SimpleResponse>(
@@ -123,19 +131,15 @@ public final class TestDeprecatedServiceGrpc {
    * </pre>
    */
   @java.lang.Deprecated
-  public static final class TestDeprecatedServiceStub extends io.grpc.stub.AbstractStub<TestDeprecatedServiceStub> {
-    private TestDeprecatedServiceStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private TestDeprecatedServiceStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class TestDeprecatedServiceStub extends io.grpc.stub.AbstractAsyncStub<TestDeprecatedServiceStub> {
+    private TestDeprecatedServiceStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected TestDeprecatedServiceStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected TestDeprecatedServiceStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new TestDeprecatedServiceStub(channel, callOptions);
     }
 
@@ -147,7 +151,7 @@ public final class TestDeprecatedServiceGrpc {
     @java.lang.Deprecated
     public void deprecatedMethod(io.grpc.testing.compiler.Test.SimpleRequest request,
         io.grpc.stub.StreamObserver<io.grpc.testing.compiler.Test.SimpleResponse> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getDeprecatedMethodMethod(), getCallOptions()), request, responseObserver);
     }
   }
@@ -158,19 +162,15 @@ public final class TestDeprecatedServiceGrpc {
    * </pre>
    */
   @java.lang.Deprecated
-  public static final class TestDeprecatedServiceBlockingStub extends io.grpc.stub.AbstractStub<TestDeprecatedServiceBlockingStub> {
-    private TestDeprecatedServiceBlockingStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private TestDeprecatedServiceBlockingStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class TestDeprecatedServiceBlockingStub extends io.grpc.stub.AbstractBlockingStub<TestDeprecatedServiceBlockingStub> {
+    private TestDeprecatedServiceBlockingStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected TestDeprecatedServiceBlockingStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected TestDeprecatedServiceBlockingStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new TestDeprecatedServiceBlockingStub(channel, callOptions);
     }
 
@@ -181,7 +181,7 @@ public final class TestDeprecatedServiceGrpc {
      */
     @java.lang.Deprecated
     public io.grpc.testing.compiler.Test.SimpleResponse deprecatedMethod(io.grpc.testing.compiler.Test.SimpleRequest request) {
-      return blockingUnaryCall(
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getDeprecatedMethodMethod(), getCallOptions(), request);
     }
   }
@@ -192,19 +192,15 @@ public final class TestDeprecatedServiceGrpc {
    * </pre>
    */
   @java.lang.Deprecated
-  public static final class TestDeprecatedServiceFutureStub extends io.grpc.stub.AbstractStub<TestDeprecatedServiceFutureStub> {
-    private TestDeprecatedServiceFutureStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private TestDeprecatedServiceFutureStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class TestDeprecatedServiceFutureStub extends io.grpc.stub.AbstractFutureStub<TestDeprecatedServiceFutureStub> {
+    private TestDeprecatedServiceFutureStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected TestDeprecatedServiceFutureStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected TestDeprecatedServiceFutureStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new TestDeprecatedServiceFutureStub(channel, callOptions);
     }
 
@@ -216,7 +212,7 @@ public final class TestDeprecatedServiceGrpc {
     @java.lang.Deprecated
     public com.google.common.util.concurrent.ListenableFuture<io.grpc.testing.compiler.Test.SimpleResponse> deprecatedMethod(
         io.grpc.testing.compiler.Test.SimpleRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getDeprecatedMethodMethod(), getCallOptions()), request);
     }
   }

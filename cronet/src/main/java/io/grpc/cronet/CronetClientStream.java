@@ -42,15 +42,14 @@ import io.grpc.internal.TransportTracer;
 import io.grpc.internal.WritableBuffer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
@@ -126,6 +125,10 @@ class CronetClientStream extends AbstractClientStream {
     this.annotation = callOptions.getOption(CRONET_ANNOTATION_KEY);
     this.annotations = callOptions.getOption(CRONET_ANNOTATIONS_KEY);
     this.state = new TransportState(maxMessageSize, statsTraceCtx, lock, transportTracer);
+
+    // Tests expect the "plain" deframer behavior, not MigratingDeframer
+    // https://github.com/grpc/grpc-java/issues/7140
+    optimizeForDirectExecutor();
   }
 
   @Override
@@ -216,7 +219,7 @@ class CronetClientStream extends AbstractClientStream {
         ByteBuffer byteBuffer;
         if (buffer != null) {
           byteBuffer = ((CronetWritableBuffer) buffer).buffer();
-          byteBuffer.flip();
+          ((Buffer) byteBuffer).flip();
         } else {
           byteBuffer = EMPTY_BUFFER;
         }
@@ -226,13 +229,6 @@ class CronetClientStream extends AbstractClientStream {
         } else {
           streamWrite(byteBuffer, endOfStream, flush);
         }
-      }
-    }
-
-    @Override
-    public void request(final int numMessages) {
-      synchronized (state.lock) {
-        state.requestMessagesFromDeframer(numMessages);
       }
     }
 
@@ -258,7 +254,7 @@ class CronetClientStream extends AbstractClientStream {
   class TransportState extends Http2ClientStreamTransportState {
     private final Object lock;
     @GuardedBy("lock")
-    private Queue<PendingData> pendingData = new LinkedList<PendingData>();
+    private Collection<PendingData> pendingData = new ArrayList<PendingData>();
     @GuardedBy("lock")
     private boolean streamReady;
     @GuardedBy("lock")
@@ -476,7 +472,7 @@ class CronetClientStream extends AbstractClientStream {
     @Override
     public void onReadCompleted(BidirectionalStream stream, UrlResponseInfo info,
         ByteBuffer buffer, boolean endOfStream) {
-      buffer.flip();
+      ((Buffer) buffer).flip();
       if (Log.isLoggable(LOG_TAG, Log.VERBOSE)) {
         Log.v(LOG_TAG, "onReadCompleted. Size=" + buffer.remaining());
       }

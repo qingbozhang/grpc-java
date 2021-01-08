@@ -50,25 +50,14 @@ public class GrpcSslContexts {
 
   private GrpcSslContexts() {}
 
-  /*
-   * The experimental "grpc-exp" string identifies gRPC (and by implication
-   * HTTP/2) when used over TLS. This indicates to the server that the client
-   * will only send gRPC traffic on the h2 connection and is negotiated in
-   * preference to h2 when the client and server support it, but is not
-   * standardized. Support for this may be removed at any time.
-   */
-  private static final String GRPC_EXP_VERSION = "grpc-exp";
-
   // The "h2" string identifies HTTP/2 when used over TLS
   private static final String HTTP2_VERSION = "h2";
 
   /*
-   * List of ALPN/NPN protocols in order of preference. GRPC_EXP_VERSION
-   * requires that HTTP2_VERSION be present and that GRPC_EXP_VERSION should be
-   * preferenced over HTTP2_VERSION.
+   * List of ALPN/NPN protocols in order of preference.
    */
-  static final List<String> NEXT_PROTOCOL_VERSIONS =
-      Collections.unmodifiableList(Arrays.asList(GRPC_EXP_VERSION, HTTP2_VERSION));
+  private static final List<String> NEXT_PROTOCOL_VERSIONS =
+      Collections.unmodifiableList(Arrays.asList(HTTP2_VERSION));
 
   /*
    * These configs use ACCEPT due to limited support in OpenSSL.  Actual protocol enforcement is
@@ -93,6 +82,7 @@ public class GrpcSslContexts {
       NEXT_PROTOCOL_VERSIONS);
 
   private static final String SUN_PROVIDER_NAME = "SunJSSE";
+  private static final String IBM_PROVIDER_NAME = "IBMJSSE2";
 
   /**
    * Creates an SslContextBuilder with ciphers and APN appropriate for gRPC.
@@ -207,10 +197,20 @@ public class GrpcSslContexts {
         apc = ALPN;
       } else {
         throw new IllegalArgumentException(
-            SUN_PROVIDER_NAME + " selected, but Java 9+ and Jetty NPN/ALPN unavailable");
+            jdkProvider.getName() + " selected, but Java 9+ and Jetty NPN/ALPN unavailable");
+      }
+    } else if (IBM_PROVIDER_NAME.equals(jdkProvider.getName())) {
+      if (JettyTlsUtil.isJava9AlpnAvailable()) {
+        apc = ALPN;
+      } else {
+        throw new IllegalArgumentException(
+            jdkProvider.getName() + " selected, but Java 9+ ALPN unavailable");
       }
     } else if (ConscryptLoader.isConscrypt(jdkProvider)) {
       apc = ALPN;
+      // TODO: Conscrypt triggers failures in the TrustManager.
+      // https://github.com/grpc/grpc-java/issues/7765
+      builder.protocols("TLSv1.2");
     } else {
       throw new IllegalArgumentException("Unknown provider; can't configure: " + jdkProvider);
     }
@@ -252,6 +252,10 @@ public class GrpcSslContexts {
         if (JettyTlsUtil.isJettyAlpnConfigured()
             || JettyTlsUtil.isJettyNpnConfigured()
             || JettyTlsUtil.isJava9AlpnAvailable()) {
+          return provider;
+        }
+      } else if (IBM_PROVIDER_NAME.equals(provider.getName())) {
+        if (JettyTlsUtil.isJava9AlpnAvailable()) {
           return provider;
         }
       } else if (ConscryptLoader.isConscrypt(provider)) {

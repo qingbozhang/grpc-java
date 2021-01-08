@@ -55,8 +55,11 @@ public abstract class ManagedChannelBuilder<T extends ManagedChannelBuilder<T>> 
    * </ul>
    *
    * <p>An authority string will be converted to a {@code NameResolver}-compliant URI, which has
-   * {@code "dns"} as the scheme, no authority, and the original authority string as its path after
-   * properly escaped. Example authority strings:
+   * the scheme from the name resolver with the highest priority (e.g. {@code "dns"}),
+   * no authority, and the original authority string as its path after properly escaped.
+   * We recommend libraries to specify the schema explicitly if it is known, since libraries cannot
+   * know which NameResolver will be default during runtime.
+   * Example authority strings:
    * <ul>
    *   <li>{@code "localhost"}</li>
    *   <li>{@code "127.0.0.1"}</li>
@@ -121,12 +124,6 @@ public abstract class ManagedChannelBuilder<T extends ManagedChannelBuilder<T>> 
     throw new UnsupportedOperationException();
   }
 
-  @Deprecated
-  @ExperimentalApi("https://github.com/grpc/grpc-java/issues/6279")
-  public T blockingExecutor(Executor executor) {
-    return offloadExecutor(executor);
-  }
-
   /**
    * Adds interceptors that will be called before the channel performs its real work. This is
    * functionally equivalent to using {@link ClientInterceptors#intercept(Channel, List)}, but while
@@ -185,6 +182,7 @@ public abstract class ManagedChannelBuilder<T extends ManagedChannelBuilder<T>> 
    * not perform HTTP/1.1 upgrades.
    *
    * @return this
+   * @throws IllegalStateException if ChannelCredentials were provided when constructing the builder
    * @throws UnsupportedOperationException if plaintext mode is not supported.
    * @since 1.11.0
    */
@@ -196,6 +194,7 @@ public abstract class ManagedChannelBuilder<T extends ManagedChannelBuilder<T>> 
    * Makes the client use TLS.
    *
    * @return this
+   * @throws IllegalStateException if ChannelCredentials were provided when constructing the builder
    * @throws UnsupportedOperationException if transport security is not supported.
    * @since 1.9.0
    */
@@ -206,8 +205,8 @@ public abstract class ManagedChannelBuilder<T extends ManagedChannelBuilder<T>> 
 
   /**
    * Provides a custom {@link NameResolver.Factory} for the channel. If this method is not called,
-   * the builder will try the providers listed by {@link NameResolverProvider#providers()} for the
-   * given target.
+   * the builder will try the providers registered in the default {@link NameResolverRegistry} for
+   * the given target.
    *
    * <p>This method should rarely be used, as name resolvers should provide a {@code
    * NameResolverProvider} and users rely on service loading to find implementations in the class
@@ -216,7 +215,12 @@ public abstract class ManagedChannelBuilder<T extends ManagedChannelBuilder<T>> 
    *
    * @return this
    * @since 1.0.0
+   * @deprecated Most usages should use a globally-registered {@link NameResolverProvider} instead,
+   *     with either the SPI mechanism or {@link NameResolverRegistry#register}. Replacements for
+   *     all use-cases are not necessarily available yet. See
+   *     <a href="https://github.com/grpc/grpc-java/issues/7133">#7133</a>.
    */
+  @Deprecated
   @ExperimentalApi("https://github.com/grpc/grpc-java/issues/1770")
   public abstract T nameResolverFactory(NameResolver.Factory resolverFactory);
 

@@ -18,6 +18,7 @@ package io.grpc.util;
 
 import com.google.common.base.MoreObjects;
 import io.grpc.Attributes;
+import io.grpc.ChannelCredentials;
 import io.grpc.ChannelLogger;
 import io.grpc.ConnectivityState;
 import io.grpc.EquivalentAddressGroup;
@@ -27,6 +28,7 @@ import io.grpc.LoadBalancer.Subchannel;
 import io.grpc.LoadBalancer.SubchannelPicker;
 import io.grpc.LoadBalancer;
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.NameResolver;
 import io.grpc.NameResolverRegistry;
 import io.grpc.SynchronizationContext;
@@ -69,6 +71,17 @@ public abstract class ForwardingLoadBalancerHelper extends LoadBalancer.Helper {
   }
 
   @Override
+  public ManagedChannelBuilder<?> createResolvingOobChannelBuilder(String target) {
+    return delegate().createResolvingOobChannelBuilder(target);
+  }
+
+  @Override
+  public ManagedChannelBuilder<?> createResolvingOobChannelBuilder(
+      String target, ChannelCredentials creds) {
+    return delegate().createResolvingOobChannelBuilder(target, creds);
+  }
+
+  @Override
   public ManagedChannel createResolvingOobChannel(String target) {
     return delegate().createResolvingOobChannel(target);
   }
@@ -99,6 +112,16 @@ public abstract class ForwardingLoadBalancerHelper extends LoadBalancer.Helper {
   @Override
   public String getAuthority() {
     return delegate().getAuthority();
+  }
+
+  @Override
+  public ChannelCredentials getChannelCredentials() {
+    return delegate().getChannelCredentials();
+  }
+
+  @Override
+  public ChannelCredentials getUnsafeChannelCredentials() {
+    return delegate().getUnsafeChannelCredentials();
   }
 
   @Override

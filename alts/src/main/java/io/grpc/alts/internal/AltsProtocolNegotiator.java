@@ -29,11 +29,10 @@ import io.grpc.InternalChannelz.Security;
 import io.grpc.SecurityLevel;
 import io.grpc.Status;
 import io.grpc.alts.internal.RpcProtocolVersionsUtil.RpcVersionsCheckResult;
-import io.grpc.internal.GrpcAttributes;
+import io.grpc.grpclb.GrpclbConstants;
 import io.grpc.internal.ObjectPool;
 import io.grpc.netty.GrpcHttp2ConnectionHandler;
-import io.grpc.netty.InternalNettyChannelBuilder;
-import io.grpc.netty.InternalNettyChannelBuilder.ProtocolNegotiatorFactory;
+import io.grpc.netty.InternalProtocolNegotiator;
 import io.grpc.netty.InternalProtocolNegotiator.ProtocolNegotiator;
 import io.grpc.netty.InternalProtocolNegotiators;
 import io.netty.channel.ChannelHandler;
@@ -65,23 +64,28 @@ public final class AltsProtocolNegotiator {
    * channel.
    */
   public static final class ClientAltsProtocolNegotiatorFactory
-      implements InternalNettyChannelBuilder.ProtocolNegotiatorFactory {
+      implements InternalProtocolNegotiator.ClientFactory {
 
     private final ImmutableList<String> targetServiceAccounts;
-    private final LazyChannel lazyHandshakerChannel;
+    private final ObjectPool<Channel> handshakerChannelPool;
 
     public ClientAltsProtocolNegotiatorFactory(
         List<String> targetServiceAccounts,
         ObjectPool<Channel> handshakerChannelPool) {
       this.targetServiceAccounts = ImmutableList.copyOf(targetServiceAccounts);
-      this.lazyHandshakerChannel = new LazyChannel(handshakerChannelPool);
+      this.handshakerChannelPool = checkNotNull(handshakerChannelPool, "handshakerChannelPool");
     }
 
     @Override
-    public ProtocolNegotiator buildProtocolNegotiator() {
+    public ProtocolNegotiator newNegotiator() {
       return new ClientAltsProtocolNegotiator(
-          new ClientTsiHandshakerFactory(targetServiceAccounts, lazyHandshakerChannel),
-          lazyHandshakerChannel);
+          targetServiceAccounts,
+          handshakerChannelPool);
+    }
+
+    @Override
+    public int getDefaultPort() {
+      return 443;
     }
   }
 
@@ -90,9 +94,10 @@ public final class AltsProtocolNegotiator {
     private final LazyChannel lazyHandshakerChannel;
 
     ClientAltsProtocolNegotiator(
-        TsiHandshakerFactory handshakerFactory, LazyChannel lazyHandshakerChannel) {
-      this.handshakerFactory = checkNotNull(handshakerFactory, "handshakerFactory");
-      this.lazyHandshakerChannel = checkNotNull(lazyHandshakerChannel, "lazyHandshakerChannel");
+        ImmutableList<String> targetServiceAccounts, ObjectPool<Channel> handshakerChannelPool) {
+      this.lazyHandshakerChannel = new LazyChannel(handshakerChannelPool);
+      this.handshakerFactory =
+          new ClientTsiHandshakerFactory(targetServiceAccounts, lazyHandshakerChannel);
     }
 
     @Override
@@ -177,9 +182,9 @@ public final class AltsProtocolNegotiator {
    * A Protocol Negotiator factory which can switch between ALTS and TLS based on EAG Attrs.
    */
   public static final class GoogleDefaultProtocolNegotiatorFactory
-      implements ProtocolNegotiatorFactory {
+      implements InternalProtocolNegotiator.ClientFactory {
     private final ImmutableList<String> targetServiceAccounts;
-    private final LazyChannel lazyHandshakerChannel;
+    private final ObjectPool<Channel> handshakerChannelPool;
     private final SslContext sslContext;
 
     /**
@@ -191,16 +196,21 @@ public final class AltsProtocolNegotiator {
         ObjectPool<Channel> handshakerChannelPool,
         SslContext sslContext) {
       this.targetServiceAccounts = ImmutableList.copyOf(targetServiceAccounts);
-      this.lazyHandshakerChannel = new LazyChannel(handshakerChannelPool);
+      this.handshakerChannelPool = checkNotNull(handshakerChannelPool, "handshakerChannelPool");
       this.sslContext = checkNotNull(sslContext, "sslContext");
     }
 
     @Override
-    public ProtocolNegotiator buildProtocolNegotiator() {
+    public ProtocolNegotiator newNegotiator() {
       return new GoogleDefaultProtocolNegotiator(
-          new ClientTsiHandshakerFactory(targetServiceAccounts, lazyHandshakerChannel),
-          lazyHandshakerChannel,
+          targetServiceAccounts,
+          handshakerChannelPool,
           sslContext);
+    }
+
+    @Override
+    public int getDefaultPort() {
+      return 443;
     }
   }
 
@@ -210,11 +220,12 @@ public final class AltsProtocolNegotiator {
     private final SslContext sslContext;
 
     GoogleDefaultProtocolNegotiator(
-        TsiHandshakerFactory handshakerFactory,
-        LazyChannel lazyHandshakerChannel,
+        ImmutableList<String> targetServiceAccounts,
+        ObjectPool<Channel> handshakerChannelPool,
         SslContext sslContext) {
-      this.handshakerFactory = checkNotNull(handshakerFactory, "handshakerFactory");
-      this.lazyHandshakerChannel = checkNotNull(lazyHandshakerChannel, "lazyHandshakerChannel");
+      this.lazyHandshakerChannel = new LazyChannel(handshakerChannelPool);
+      this.handshakerFactory =
+          new ClientTsiHandshakerFactory(targetServiceAccounts, lazyHandshakerChannel);
       this.sslContext = checkNotNull(sslContext, "checkNotNull");
     }
 
@@ -227,8 +238,9 @@ public final class AltsProtocolNegotiator {
     public ChannelHandler newHandler(GrpcHttp2ConnectionHandler grpcHandler) {
       ChannelHandler gnh = InternalProtocolNegotiators.grpcNegotiationHandler(grpcHandler);
       ChannelHandler securityHandler;
-      if (grpcHandler.getEagAttributes().get(GrpcAttributes.ATTR_LB_ADDR_AUTHORITY) != null
-          || grpcHandler.getEagAttributes().get(GrpcAttributes.ATTR_LB_PROVIDED_BACKEND) != null) {
+      if (grpcHandler.getEagAttributes().get(GrpclbConstants.ATTR_LB_ADDR_AUTHORITY) != null
+          || grpcHandler.getEagAttributes().get(
+              GrpclbConstants.ATTR_LB_PROVIDED_BACKEND) != null) {
         TsiHandshaker handshaker = handshakerFactory.newHandshaker(grpcHandler.getAuthority());
         NettyTsiHandshaker nettyHandshaker = new NettyTsiHandshaker(handshaker);
         securityHandler =
@@ -297,7 +309,7 @@ public final class AltsProtocolNegotiator {
     /** Returns the cached channel to the channel pool. */
     synchronized void close() {
       if (channel != null) {
-        channelPool.returnObject(channel);
+        channel = channelPool.returnObject(channel);
       }
     }
   }

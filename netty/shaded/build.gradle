@@ -10,11 +10,10 @@ description = "gRPC: Netty Shaded"
 sourceSets { testShadow {} }
 
 dependencies {
-    compile project(':grpc-netty')
-    runtime libraries.netty_tcnative,
+    implementation project(':grpc-netty')
+    runtimeOnly libraries.netty_tcnative,
             libraries.netty_epoll
-    testShadowCompile files(shadowJar),
-            configurations.shadow,
+    testShadowImplementation files(shadowJar),
             project(':grpc-testing-proto'),
             project(':grpc-testing'),
             libraries.truth
@@ -47,6 +46,9 @@ publishing {
         maven(MavenPublication) {
             // Ideally swap to project.shadow.component(it) when it isn't broken for project deps
             artifact shadowJar
+            // Empty jars are not published via withJavadocJar() and withSourcesJar()
+            artifact javadocJar
+            artifact sourcesJar
 
             pom.withXml {
                 def dependencies = asNode().appendNode('dependencies')

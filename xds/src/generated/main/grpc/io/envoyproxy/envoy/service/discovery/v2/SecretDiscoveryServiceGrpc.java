@@ -1,19 +1,6 @@
 package io.envoyproxy.envoy.service.discovery.v2;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  */
@@ -124,7 +111,14 @@ public final class SecretDiscoveryServiceGrpc {
    * Creates a new async stub that supports all call types for the service
    */
   public static SecretDiscoveryServiceStub newStub(io.grpc.Channel channel) {
-    return new SecretDiscoveryServiceStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<SecretDiscoveryServiceStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<SecretDiscoveryServiceStub>() {
+        @java.lang.Override
+        public SecretDiscoveryServiceStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new SecretDiscoveryServiceStub(channel, callOptions);
+        }
+      };
+    return SecretDiscoveryServiceStub.newStub(factory, channel);
   }
 
   /**
@@ -132,7 +126,14 @@ public final class SecretDiscoveryServiceGrpc {
    */
   public static SecretDiscoveryServiceBlockingStub newBlockingStub(
       io.grpc.Channel channel) {
-    return new SecretDiscoveryServiceBlockingStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<SecretDiscoveryServiceBlockingStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<SecretDiscoveryServiceBlockingStub>() {
+        @java.lang.Override
+        public SecretDiscoveryServiceBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new SecretDiscoveryServiceBlockingStub(channel, callOptions);
+        }
+      };
+    return SecretDiscoveryServiceBlockingStub.newStub(factory, channel);
   }
 
   /**
@@ -140,7 +141,14 @@ public final class SecretDiscoveryServiceGrpc {
    */
   public static SecretDiscoveryServiceFutureStub newFutureStub(
       io.grpc.Channel channel) {
-    return new SecretDiscoveryServiceFutureStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<SecretDiscoveryServiceFutureStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<SecretDiscoveryServiceFutureStub>() {
+        @java.lang.Override
+        public SecretDiscoveryServiceFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new SecretDiscoveryServiceFutureStub(channel, callOptions);
+        }
+      };
+    return SecretDiscoveryServiceFutureStub.newStub(factory, channel);
   }
 
   /**
@@ -151,42 +159,42 @@ public final class SecretDiscoveryServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest> deltaSecrets(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryResponse> responseObserver) {
-      return asyncUnimplementedStreamingCall(getDeltaSecretsMethod(), responseObserver);
+      return io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall(getDeltaSecretsMethod(), responseObserver);
     }
 
     /**
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryRequest> streamSecrets(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryResponse> responseObserver) {
-      return asyncUnimplementedStreamingCall(getStreamSecretsMethod(), responseObserver);
+      return io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall(getStreamSecretsMethod(), responseObserver);
     }
 
     /**
      */
     public void fetchSecrets(io.envoyproxy.envoy.api.v2.DiscoveryRequest request,
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryResponse> responseObserver) {
-      asyncUnimplementedUnaryCall(getFetchSecretsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getFetchSecretsMethod(), responseObserver);
     }
 
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getDeltaSecretsMethod(),
-            asyncBidiStreamingCall(
+            io.grpc.stub.ServerCalls.asyncBidiStreamingCall(
               new MethodHandlers<
                 io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest,
                 io.envoyproxy.envoy.api.v2.DeltaDiscoveryResponse>(
                   this, METHODID_DELTA_SECRETS)))
           .addMethod(
             getStreamSecretsMethod(),
-            asyncBidiStreamingCall(
+            io.grpc.stub.ServerCalls.asyncBidiStreamingCall(
               new MethodHandlers<
                 io.envoyproxy.envoy.api.v2.DiscoveryRequest,
                 io.envoyproxy.envoy.api.v2.DiscoveryResponse>(
                   this, METHODID_STREAM_SECRETS)))
           .addMethod(
             getFetchSecretsMethod(),
-            asyncUnaryCall(
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 io.envoyproxy.envoy.api.v2.DiscoveryRequest,
                 io.envoyproxy.envoy.api.v2.DiscoveryResponse>(
@@ -197,19 +205,15 @@ public final class SecretDiscoveryServiceGrpc {
 
   /**
    */
-  public static final class SecretDiscoveryServiceStub extends io.grpc.stub.AbstractStub<SecretDiscoveryServiceStub> {
-    private SecretDiscoveryServiceStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private SecretDiscoveryServiceStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class SecretDiscoveryServiceStub extends io.grpc.stub.AbstractAsyncStub<SecretDiscoveryServiceStub> {
+    private SecretDiscoveryServiceStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected SecretDiscoveryServiceStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected SecretDiscoveryServiceStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new SecretDiscoveryServiceStub(channel, callOptions);
     }
 
@@ -217,7 +221,7 @@ public final class SecretDiscoveryServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest> deltaSecrets(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryResponse> responseObserver) {
-      return asyncBidiStreamingCall(
+      return io.grpc.stub.ClientCalls.asyncBidiStreamingCall(
           getChannel().newCall(getDeltaSecretsMethod(), getCallOptions()), responseObserver);
     }
 
@@ -225,7 +229,7 @@ public final class SecretDiscoveryServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryRequest> streamSecrets(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryResponse> responseObserver) {
-      return asyncBidiStreamingCall(
+      return io.grpc.stub.ClientCalls.asyncBidiStreamingCall(
           getChannel().newCall(getStreamSecretsMethod(), getCallOptions()), responseObserver);
     }
 
@@ -233,52 +237,44 @@ public final class SecretDiscoveryServiceGrpc {
      */
     public void fetchSecrets(io.envoyproxy.envoy.api.v2.DiscoveryRequest request,
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryResponse> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getFetchSecretsMethod(), getCallOptions()), request, responseObserver);
     }
   }
 
   /**
    */
-  public static final class SecretDiscoveryServiceBlockingStub extends io.grpc.stub.AbstractStub<SecretDiscoveryServiceBlockingStub> {
-    private SecretDiscoveryServiceBlockingStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private SecretDiscoveryServiceBlockingStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class SecretDiscoveryServiceBlockingStub extends io.grpc.stub.AbstractBlockingStub<SecretDiscoveryServiceBlockingStub> {
+    private SecretDiscoveryServiceBlockingStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected SecretDiscoveryServiceBlockingStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected SecretDiscoveryServiceBlockingStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new SecretDiscoveryServiceBlockingStub(channel, callOptions);
     }
 
     /**
      */
     public io.envoyproxy.envoy.api.v2.DiscoveryResponse fetchSecrets(io.envoyproxy.envoy.api.v2.DiscoveryRequest request) {
-      return blockingUnaryCall(
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getFetchSecretsMethod(), getCallOptions(), request);
     }
   }
 
   /**
    */
-  public static final class SecretDiscoveryServiceFutureStub extends io.grpc.stub.AbstractStub<SecretDiscoveryServiceFutureStub> {
-    private SecretDiscoveryServiceFutureStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private SecretDiscoveryServiceFutureStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class SecretDiscoveryServiceFutureStub extends io.grpc.stub.AbstractFutureStub<SecretDiscoveryServiceFutureStub> {
+    private SecretDiscoveryServiceFutureStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected SecretDiscoveryServiceFutureStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected SecretDiscoveryServiceFutureStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new SecretDiscoveryServiceFutureStub(channel, callOptions);
     }
 
@@ -286,7 +282,7 @@ public final class SecretDiscoveryServiceGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<io.envoyproxy.envoy.api.v2.DiscoveryResponse> fetchSecrets(
         io.envoyproxy.envoy.api.v2.DiscoveryRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getFetchSecretsMethod(), getCallOptions()), request);
     }
   }

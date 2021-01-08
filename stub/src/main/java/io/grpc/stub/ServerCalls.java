@@ -48,7 +48,7 @@ public final class ServerCalls {
    */
   public static <ReqT, RespT> ServerCallHandler<ReqT, RespT> asyncUnaryCall(
       UnaryMethod<ReqT, RespT> method) {
-    return asyncUnaryRequestCall(method);
+    return new UnaryServerCallHandler<>(method, false);
   }
 
   /**
@@ -58,7 +58,7 @@ public final class ServerCalls {
    */
   public static <ReqT, RespT> ServerCallHandler<ReqT, RespT> asyncServerStreamingCall(
       ServerStreamingMethod<ReqT, RespT> method) {
-    return asyncUnaryRequestCall(method);
+    return new UnaryServerCallHandler<>(method, true);
   }
 
   /**
@@ -68,7 +68,7 @@ public final class ServerCalls {
    */
   public static <ReqT, RespT> ServerCallHandler<ReqT, RespT> asyncClientStreamingCall(
       ClientStreamingMethod<ReqT, RespT> method) {
-    return asyncStreamingRequestCall(method);
+    return new StreamingServerCallHandler<>(method, false);
   }
 
   /**
@@ -78,37 +78,47 @@ public final class ServerCalls {
    */
   public static <ReqT, RespT> ServerCallHandler<ReqT, RespT> asyncBidiStreamingCall(
       BidiStreamingMethod<ReqT, RespT> method) {
-    return asyncStreamingRequestCall(method);
+    return new StreamingServerCallHandler<>(method, true);
   }
 
   /**
    * Adaptor to a unary call method.
    */
-  public interface UnaryMethod<ReqT, RespT> extends UnaryRequestMethod<ReqT, RespT> {}
+  public interface UnaryMethod<ReqT, RespT> extends UnaryRequestMethod<ReqT, RespT> {
+    @Override void invoke(ReqT request, StreamObserver<RespT> responseObserver);
+  }
 
   /**
    * Adaptor to a server streaming method.
    */
-  public interface ServerStreamingMethod<ReqT, RespT> extends UnaryRequestMethod<ReqT, RespT> {}
+  public interface ServerStreamingMethod<ReqT, RespT> extends UnaryRequestMethod<ReqT, RespT> {
+    @Override void invoke(ReqT request, StreamObserver<RespT> responseObserver);
+  }
 
   /**
    * Adaptor to a client streaming method.
    */
-  public interface ClientStreamingMethod<ReqT, RespT> extends StreamingRequestMethod<ReqT, RespT> {}
+  public interface ClientStreamingMethod<ReqT, RespT> extends StreamingRequestMethod<ReqT, RespT> {
+    @Override StreamObserver<ReqT> invoke(StreamObserver<RespT> responseObserver);
+  }
 
   /**
    * Adaptor to a bidirectional streaming method.
    */
-  public interface BidiStreamingMethod<ReqT, RespT> extends StreamingRequestMethod<ReqT, RespT> {}
+  public interface BidiStreamingMethod<ReqT, RespT> extends StreamingRequestMethod<ReqT, RespT> {
+    @Override StreamObserver<ReqT> invoke(StreamObserver<RespT> responseObserver);
+  }
 
   private static final class UnaryServerCallHandler<ReqT, RespT>
       implements ServerCallHandler<ReqT, RespT> {
 
     private final UnaryRequestMethod<ReqT, RespT> method;
+    private final boolean serverStreaming;
 
     // Non private to avoid synthetic class
-    UnaryServerCallHandler(UnaryRequestMethod<ReqT, RespT> method) {
+    UnaryServerCallHandler(UnaryRequestMethod<ReqT, RespT> method, boolean serverStreaming) {
       this.method = method;
+      this.serverStreaming = serverStreaming;
     }
 
     @Override
@@ -117,7 +127,7 @@ public final class ServerCalls {
           call.getMethodDescriptor().getType().clientSendsOneMessage(),
           "asyncUnaryRequestCall is only for clientSendsOneMessage methods");
       ServerCallStreamObserverImpl<ReqT, RespT> responseObserver =
-          new ServerCallStreamObserverImpl<>(call);
+          new ServerCallStreamObserverImpl<>(call, serverStreaming);
       // We expect only 1 request, but we ask for 2 requests here so that if a misbehaving client
       // sends more than 1 requests, ServerCall will catch it. Note that disabling auto
       // inbound flow control has no effect on unary calls.
@@ -181,9 +191,11 @@ public final class ServerCalls {
 
       @Override
       public void onCancel() {
-        responseObserver.cancelled = true;
         if (responseObserver.onCancelHandler != null) {
           responseObserver.onCancelHandler.run();
+        } else {
+          // Only trigger exceptions if unable to provide notification via a callback
+          responseObserver.cancelled = true;
         }
       }
 
@@ -197,33 +209,25 @@ public final class ServerCalls {
     }
   }
 
-  /**
-   * Creates a {@link ServerCallHandler} for a unary request call method of the service.
-   *
-   * @param method an adaptor to the actual method on the service implementation.
-   */
-  private static <ReqT, RespT> ServerCallHandler<ReqT, RespT> asyncUnaryRequestCall(
-      UnaryRequestMethod<ReqT, RespT> method) {
-    return new UnaryServerCallHandler<>(method);
-  }
-
   private static final class StreamingServerCallHandler<ReqT, RespT>
       implements ServerCallHandler<ReqT, RespT> {
 
     private final StreamingRequestMethod<ReqT, RespT> method;
+    private final boolean bidi;
 
     // Non private to avoid synthetic class
-    StreamingServerCallHandler(StreamingRequestMethod<ReqT, RespT> method) {
+    StreamingServerCallHandler(StreamingRequestMethod<ReqT, RespT> method, boolean bidi) {
       this.method = method;
+      this.bidi = bidi;
     }
 
     @Override
     public ServerCall.Listener<ReqT> startCall(ServerCall<ReqT, RespT> call, Metadata headers) {
       ServerCallStreamObserverImpl<ReqT, RespT> responseObserver =
-          new ServerCallStreamObserverImpl<>(call);
+          new ServerCallStreamObserverImpl<>(call, bidi);
       StreamObserver<ReqT> requestObserver = method.invoke(responseObserver);
       responseObserver.freeze();
-      if (responseObserver.autoFlowControlEnabled) {
+      if (responseObserver.autoRequestEnabled) {
         call.request(1);
       }
       return new StreamingServerCallListener(requestObserver, responseObserver, call);
@@ -251,7 +255,7 @@ public final class ServerCalls {
         requestObserver.onNext(request);
 
         // Request delivery of the next inbound message.
-        if (responseObserver.autoFlowControlEnabled) {
+        if (responseObserver.autoRequestEnabled) {
           call.request(1);
         }
       }
@@ -264,14 +268,19 @@ public final class ServerCalls {
 
       @Override
       public void onCancel() {
-        responseObserver.cancelled = true;
         if (responseObserver.onCancelHandler != null) {
           responseObserver.onCancelHandler.run();
+        } else {
+          // Only trigger exceptions if unable to provide notification via a callback. Even though
+          // onError would provide notification to the server, we still throw an error since there
+          // isn't a guaranteed callback available. If the cancellation happened in a different
+          // order the service could be surprised to see the exception.
+          responseObserver.cancelled = true;
         }
         if (!halfClosed) {
           requestObserver.onError(
               Status.CANCELLED
-                  .withDescription("cancelled before receiving half close")
+                  .withDescription("client cancelled")
                   .asRuntimeException());
         }
       }
@@ -285,30 +294,27 @@ public final class ServerCalls {
     }
   }
 
-  /**
-   * Creates a {@link ServerCallHandler} for a streaming request call method of the service.
-   *
-   * @param method an adaptor to the actual method on the service implementation.
-   */
-  private static <ReqT, RespT> ServerCallHandler<ReqT, RespT> asyncStreamingRequestCall(
-      StreamingRequestMethod<ReqT, RespT> method) {
-    return new StreamingServerCallHandler<>(method);
-  }
-
   private interface UnaryRequestMethod<ReqT, RespT> {
+    /**
+     * The provided {@code responseObserver} will extend {@link ServerCallStreamObserver}.
+     */
     void invoke(ReqT request, StreamObserver<RespT> responseObserver);
   }
 
   private interface StreamingRequestMethod<ReqT, RespT> {
+    /**
+     * The provided {@code responseObserver} will extend {@link ServerCallStreamObserver}.
+     */
     StreamObserver<ReqT> invoke(StreamObserver<RespT> responseObserver);
   }
 
   private static final class ServerCallStreamObserverImpl<ReqT, RespT>
       extends ServerCallStreamObserver<RespT> {
     final ServerCall<ReqT, RespT> call;
+    private final boolean serverStreamingOrBidi;
     volatile boolean cancelled;
     private boolean frozen;
-    private boolean autoFlowControlEnabled = true;
+    private boolean autoRequestEnabled = true;
     private boolean sentHeaders;
     private Runnable onReadyHandler;
     private Runnable onCancelHandler;
@@ -316,8 +322,9 @@ public final class ServerCalls {
     private boolean completed = false;
 
     // Non private to avoid synthetic class
-    ServerCallStreamObserverImpl(ServerCall<ReqT, RespT> call) {
+    ServerCallStreamObserverImpl(ServerCall<ReqT, RespT> call, boolean serverStreamingOrBidi) {
       this.call = call;
+      this.serverStreamingOrBidi = serverStreamingOrBidi;
     }
 
     private void freeze() {
@@ -337,10 +344,17 @@ public final class ServerCalls {
     @Override
     public void onNext(RespT response) {
       if (cancelled) {
-        if (onCancelHandler == null) {
-          throw Status.CANCELLED.withDescription("call already cancelled").asRuntimeException();
+        if (serverStreamingOrBidi) {
+          throw Status.CANCELLED
+              .withDescription("call already cancelled. "
+                  + "Use ServerCallStreamObserver.setOnCancelHandler() to disable this exception")
+              .asRuntimeException();
+        } else {
+          // We choose not to throw for unary responses. The exception is intended to stop servers
+          // from continuing processing, but for unary responses there is no further processing
+          // so throwing an exception would not provide a benefit and would increase application
+          // complexity.
         }
-        return;
       }
       checkState(!aborted, "Stream was terminated by error, no further calls are allowed");
       checkState(!completed, "Stream is already completed, no further calls are allowed");
@@ -363,14 +377,8 @@ public final class ServerCalls {
 
     @Override
     public void onCompleted() {
-      if (cancelled) {
-        if (onCancelHandler == null) {
-          throw Status.CANCELLED.withDescription("call already cancelled").asRuntimeException();
-        }
-      } else {
-        call.close(Status.OK, new Metadata());
-        completed = true;
-      }
+      call.close(Status.OK, new Metadata());
+      completed = true;
     }
 
     @Override
@@ -399,10 +407,16 @@ public final class ServerCalls {
       this.onCancelHandler = onCancelHandler;
     }
 
+    @Deprecated
     @Override
     public void disableAutoInboundFlowControl() {
+      disableAutoRequest();
+    }
+
+    @Override
+    public void disableAutoRequest() {
       checkState(!frozen, "Cannot disable auto flow control after initialization");
-      autoFlowControlEnabled = false;
+      autoRequestEnabled = false;
     }
 
     @Override

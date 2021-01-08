@@ -1,19 +1,6 @@
 package io.envoyproxy.envoy.api.v2;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  * <pre>
@@ -130,7 +117,14 @@ public final class ListenerDiscoveryServiceGrpc {
    * Creates a new async stub that supports all call types for the service
    */
   public static ListenerDiscoveryServiceStub newStub(io.grpc.Channel channel) {
-    return new ListenerDiscoveryServiceStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<ListenerDiscoveryServiceStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<ListenerDiscoveryServiceStub>() {
+        @java.lang.Override
+        public ListenerDiscoveryServiceStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new ListenerDiscoveryServiceStub(channel, callOptions);
+        }
+      };
+    return ListenerDiscoveryServiceStub.newStub(factory, channel);
   }
 
   /**
@@ -138,7 +132,14 @@ public final class ListenerDiscoveryServiceGrpc {
    */
   public static ListenerDiscoveryServiceBlockingStub newBlockingStub(
       io.grpc.Channel channel) {
-    return new ListenerDiscoveryServiceBlockingStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<ListenerDiscoveryServiceBlockingStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<ListenerDiscoveryServiceBlockingStub>() {
+        @java.lang.Override
+        public ListenerDiscoveryServiceBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new ListenerDiscoveryServiceBlockingStub(channel, callOptions);
+        }
+      };
+    return ListenerDiscoveryServiceBlockingStub.newStub(factory, channel);
   }
 
   /**
@@ -146,7 +147,14 @@ public final class ListenerDiscoveryServiceGrpc {
    */
   public static ListenerDiscoveryServiceFutureStub newFutureStub(
       io.grpc.Channel channel) {
-    return new ListenerDiscoveryServiceFutureStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<ListenerDiscoveryServiceFutureStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<ListenerDiscoveryServiceFutureStub>() {
+        @java.lang.Override
+        public ListenerDiscoveryServiceFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new ListenerDiscoveryServiceFutureStub(channel, callOptions);
+        }
+      };
+    return ListenerDiscoveryServiceFutureStub.newStub(factory, channel);
   }
 
   /**
@@ -163,42 +171,42 @@ public final class ListenerDiscoveryServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest> deltaListeners(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryResponse> responseObserver) {
-      return asyncUnimplementedStreamingCall(getDeltaListenersMethod(), responseObserver);
+      return io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall(getDeltaListenersMethod(), responseObserver);
     }
 
     /**
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryRequest> streamListeners(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryResponse> responseObserver) {
-      return asyncUnimplementedStreamingCall(getStreamListenersMethod(), responseObserver);
+      return io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall(getStreamListenersMethod(), responseObserver);
     }
 
     /**
      */
     public void fetchListeners(io.envoyproxy.envoy.api.v2.DiscoveryRequest request,
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryResponse> responseObserver) {
-      asyncUnimplementedUnaryCall(getFetchListenersMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getFetchListenersMethod(), responseObserver);
     }
 
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getDeltaListenersMethod(),
-            asyncBidiStreamingCall(
+            io.grpc.stub.ServerCalls.asyncBidiStreamingCall(
               new MethodHandlers<
                 io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest,
                 io.envoyproxy.envoy.api.v2.DeltaDiscoveryResponse>(
                   this, METHODID_DELTA_LISTENERS)))
           .addMethod(
             getStreamListenersMethod(),
-            asyncBidiStreamingCall(
+            io.grpc.stub.ServerCalls.asyncBidiStreamingCall(
               new MethodHandlers<
                 io.envoyproxy.envoy.api.v2.DiscoveryRequest,
                 io.envoyproxy.envoy.api.v2.DiscoveryResponse>(
                   this, METHODID_STREAM_LISTENERS)))
           .addMethod(
             getFetchListenersMethod(),
-            asyncUnaryCall(
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 io.envoyproxy.envoy.api.v2.DiscoveryRequest,
                 io.envoyproxy.envoy.api.v2.DiscoveryResponse>(
@@ -215,19 +223,15 @@ public final class ListenerDiscoveryServiceGrpc {
    * allowed to drain from listeners that are no longer present.
    * </pre>
    */
-  public static final class ListenerDiscoveryServiceStub extends io.grpc.stub.AbstractStub<ListenerDiscoveryServiceStub> {
-    private ListenerDiscoveryServiceStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private ListenerDiscoveryServiceStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class ListenerDiscoveryServiceStub extends io.grpc.stub.AbstractAsyncStub<ListenerDiscoveryServiceStub> {
+    private ListenerDiscoveryServiceStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected ListenerDiscoveryServiceStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected ListenerDiscoveryServiceStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new ListenerDiscoveryServiceStub(channel, callOptions);
     }
 
@@ -235,7 +239,7 @@ public final class ListenerDiscoveryServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest> deltaListeners(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryResponse> responseObserver) {
-      return asyncBidiStreamingCall(
+      return io.grpc.stub.ClientCalls.asyncBidiStreamingCall(
           getChannel().newCall(getDeltaListenersMethod(), getCallOptions()), responseObserver);
     }
 
@@ -243,7 +247,7 @@ public final class ListenerDiscoveryServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryRequest> streamListeners(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryResponse> responseObserver) {
-      return asyncBidiStreamingCall(
+      return io.grpc.stub.ClientCalls.asyncBidiStreamingCall(
           getChannel().newCall(getStreamListenersMethod(), getCallOptions()), responseObserver);
     }
 
@@ -251,7 +255,7 @@ public final class ListenerDiscoveryServiceGrpc {
      */
     public void fetchListeners(io.envoyproxy.envoy.api.v2.DiscoveryRequest request,
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryResponse> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getFetchListenersMethod(), getCallOptions()), request, responseObserver);
     }
   }
@@ -264,26 +268,22 @@ public final class ListenerDiscoveryServiceGrpc {
    * allowed to drain from listeners that are no longer present.
    * </pre>
    */
-  public static final class ListenerDiscoveryServiceBlockingStub extends io.grpc.stub.AbstractStub<ListenerDiscoveryServiceBlockingStub> {
-    private ListenerDiscoveryServiceBlockingStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private ListenerDiscoveryServiceBlockingStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class ListenerDiscoveryServiceBlockingStub extends io.grpc.stub.AbstractBlockingStub<ListenerDiscoveryServiceBlockingStub> {
+    private ListenerDiscoveryServiceBlockingStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected ListenerDiscoveryServiceBlockingStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected ListenerDiscoveryServiceBlockingStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new ListenerDiscoveryServiceBlockingStub(channel, callOptions);
     }
 
     /**
      */
     public io.envoyproxy.envoy.api.v2.DiscoveryResponse fetchListeners(io.envoyproxy.envoy.api.v2.DiscoveryRequest request) {
-      return blockingUnaryCall(
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getFetchListenersMethod(), getCallOptions(), request);
     }
   }
@@ -296,19 +296,15 @@ public final class ListenerDiscoveryServiceGrpc {
    * allowed to drain from listeners that are no longer present.
    * </pre>
    */
-  public static final class ListenerDiscoveryServiceFutureStub extends io.grpc.stub.AbstractStub<ListenerDiscoveryServiceFutureStub> {
-    private ListenerDiscoveryServiceFutureStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private ListenerDiscoveryServiceFutureStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class ListenerDiscoveryServiceFutureStub extends io.grpc.stub.AbstractFutureStub<ListenerDiscoveryServiceFutureStub> {
+    private ListenerDiscoveryServiceFutureStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected ListenerDiscoveryServiceFutureStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected ListenerDiscoveryServiceFutureStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new ListenerDiscoveryServiceFutureStub(channel, callOptions);
     }
 
@@ -316,7 +312,7 @@ public final class ListenerDiscoveryServiceGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<io.envoyproxy.envoy.api.v2.DiscoveryResponse> fetchListeners(
         io.envoyproxy.envoy.api.v2.DiscoveryRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getFetchListenersMethod(), getCallOptions()), request);
     }
   }

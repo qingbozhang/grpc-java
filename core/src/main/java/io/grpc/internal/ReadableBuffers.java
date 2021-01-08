@@ -23,6 +23,7 @@ import io.grpc.KnownLength;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
@@ -229,7 +230,7 @@ public final class ReadableBuffers {
     @Override
     public void skipBytes(int length) {
       checkReadable(length);
-      bytes.position(bytes.position() + length);
+      ((Buffer) bytes).position(bytes.position() + length);
     }
 
     @Override
@@ -246,7 +247,7 @@ public final class ReadableBuffers {
 
       // Change the limit so that only length bytes are available.
       int prevLimit = bytes.limit();
-      bytes.limit(bytes.position() + length);
+      ((Buffer) bytes).limit(bytes.position() + length);
 
       // Write the bytes and restore the original limit.
       dest.put(bytes);
@@ -258,7 +259,7 @@ public final class ReadableBuffers {
       checkReadable(length);
       if (hasArray()) {
         dest.write(array(), arrayOffset(), length);
-        bytes.position(bytes.position() + length);
+        ((Buffer) bytes).position(bytes.position() + length);
       } else {
         // The buffer doesn't support array(). Copy the data to an intermediate buffer.
         byte[] array = new byte[length];
@@ -271,8 +272,8 @@ public final class ReadableBuffers {
     public ByteReadableBufferWrapper readBytes(int length) {
       checkReadable(length);
       ByteBuffer buffer = bytes.duplicate();
-      buffer.limit(bytes.position() + length);
-      bytes.position(bytes.position() + length);
+      ((Buffer) buffer).limit(bytes.position() + length);
+      ((Buffer) bytes).position(bytes.position() + length);
       return new ByteReadableBufferWrapper(buffer);
     }
 

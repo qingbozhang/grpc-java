@@ -51,8 +51,7 @@ public final class MethodDescriptor<ReqT, RespT> {
 
   // Must be set to InternalKnownTransport.values().length
   // Not referenced to break the dependency.
-  private final AtomicReferenceArray<Object> rawMethodNames = new AtomicReferenceArray<>(1);
-
+  private final AtomicReferenceArray<Object> rawMethodNames = new AtomicReferenceArray<>(2);
 
   /**
    * Gets the cached "raw" method name for this Method Descriptor.  The raw name is transport
@@ -86,7 +85,7 @@ public final class MethodDescriptor<ReqT, RespT> {
     UNARY,
 
     /**
-     * Zero or more request messages followed by one response message.
+     * Zero or more request messages with one response message.
      */
     CLIENT_STREAMING,
 
@@ -107,9 +106,8 @@ public final class MethodDescriptor<ReqT, RespT> {
     UNKNOWN;
 
     /**
-     * Returns {@code true} if the client will immediately send one request message to the server
-     * after calling {@link ClientCall#start(io.grpc.ClientCall.Listener, io.grpc.Metadata)}
-     * and then immediately half-close the stream by calling {@link io.grpc.ClientCall#halfClose()}.
+     * Returns {@code true} for {@code UNARY} and {@code SERVER_STREAMING}, which do not permit the
+     * client to stream.
      *
      * @since 1.0.0
      */
@@ -118,9 +116,8 @@ public final class MethodDescriptor<ReqT, RespT> {
     }
 
     /**
-     * Returns {@code true} if the server will immediately send one response message to the client
-     * upon receipt of {@link io.grpc.ServerCall.Listener#onHalfClose()} and then immediately
-     * close the stream by calling {@link ServerCall#close(Status, io.grpc.Metadata)}.
+     * Returns {@code true} for {@code UNARY} and {@code CLIENT_STREAMING}, which do not permit the
+     * server to stream.
      *
      * @since 1.0.0
      */
@@ -266,6 +263,17 @@ public final class MethodDescriptor<ReqT, RespT> {
   }
 
   /**
+   * A convenience method for {@code extractBareMethodName(getFullMethodName())}.
+   *
+   * @since 1.32.0
+   */
+  @Nullable
+  @ExperimentalApi("https://github.com/grpc/grpc-java/issues/5635")
+  public String getBareMethodName() {
+    return extractBareMethodName(fullMethodName);
+  }
+
+  /**
    * Parse a response payload from the given {@link InputStream}.
    *
    * @param input stream containing response message to parse.
@@ -399,6 +407,22 @@ public final class MethodDescriptor<ReqT, RespT> {
       return null;
     }
     return fullMethodName.substring(0, index);
+  }
+
+  /**
+   * Extract the method name out of a fully qualified method name. May return {@code null}
+   * if the input is malformed, but you cannot rely on it for the validity of the input.
+   *
+   * @since 1.32.0
+   */
+  @Nullable
+  @ExperimentalApi("https://github.com/grpc/grpc-java/issues/5635")
+  public static String extractBareMethodName(String fullMethodName) {
+    int index = checkNotNull(fullMethodName, "fullMethodName").lastIndexOf('/');
+    if (index == -1) {
+      return null;
+    }
+    return fullMethodName.substring(index + 1);
   }
 
   /**

@@ -75,18 +75,19 @@ import javax.annotation.concurrent.ThreadSafe;
  *   synchronization primitives, blocking I/O, blocking RPCs, etc.</li>
  *
  *   <li><strong>Avoid calling into other components with lock held</strong>.  The Synchronization
- *   Context may be under a lock, e.g., the transport lock of OkHttp.  If your LoadBalancer has a
- *   lock, holds the lock in a callback method (e.g., {@link #handleSubchannelState
- *   handleSubchannelState()}) while calling into another class that may involve locks, be cautious
- *   of deadlock.  Generally you wouldn't need any locking in the LoadBalancer.</li>
+ *   Context may be under a lock, e.g., the transport lock of OkHttp.  If your LoadBalancer holds a
+ *   lock in a callback method (e.g., {@link #handleResolvedAddresses handleResolvedAddresses()})
+ *   while calling into another method that also involves locks, be cautious of deadlock.  Generally
+ *   you wouldn't need any locking in the LoadBalancer if you follow the canonical implementation
+ *   pattern below.</li>
  *
  * </ol>
  *
  * <h3>The canonical implementation pattern</h3>
  *
  * <p>A {@link LoadBalancer} keeps states like the latest addresses from NameResolver, the
- * Subchannel(s) and their latest connectivity states.  These states are mutated within the Channel
- * Executor.
+ * Subchannel(s) and their latest connectivity states.  These states are mutated within the
+ * Synchronization Context,
  *
  * <p>A typical {@link SubchannelPicker SubchannelPicker} holds a snapshot of these states.  It may
  * have its own states, e.g., a picker from a round-robin load-balancer may keep a pointer to the
@@ -95,9 +96,10 @@ import javax.annotation.concurrent.ThreadSafe;
  * picker only needs to synchronize its own states, which is typically trivial to implement.
  *
  * <p>When the LoadBalancer states changes, e.g., Subchannels has become or stopped being READY, and
- * we want subsequent RPCs to use the latest list of READY Subchannels, LoadBalancer would create
- * a new picker, which holds a snapshot of the latest Subchannel list.  Refer to the javadoc of
- * {@link #handleSubchannelState handleSubchannelState()} how to do this properly.
+ * we want subsequent RPCs to use the latest list of READY Subchannels, LoadBalancer would create a
+ * new picker, which holds a snapshot of the latest Subchannel list.  Refer to the javadoc of {@link
+ * io.grpc.LoadBalancer.SubchannelStateListener#onSubchannelState onSubchannelState()} how to do
+ * this properly.
  *
  * <p>No synchronization should be necessary between LoadBalancer and its pickers if you follow
  * the pattern above.  It may be possible to implement in a different way, but that would usually
@@ -108,15 +110,11 @@ import javax.annotation.concurrent.ThreadSafe;
 @ExperimentalApi("https://github.com/grpc/grpc-java/issues/1771")
 @NotThreadSafe
 public abstract class LoadBalancer {
-  /**
-   * The load-balancing config converted from an JSON object injected by the GRPC library.
-   *
-   * <p>{@link NameResolver}s should not produce this attribute.
-   */
-  @NameResolver.ResolutionResultAttr
-  public static final Attributes.Key<Map<String, ?>> ATTR_LOAD_BALANCING_CONFIG =
-      Attributes.Key.create("io.grpc.LoadBalancer.loadBalancingConfig");
 
+  @Internal
+  @NameResolver.ResolutionResultAttr
+  public static final Attributes.Key<Map<String, ?>> ATTR_HEALTH_CHECKING_CONFIG =
+      Attributes.Key.create("health-checking-config");
   private int recursionCount;
 
   /**
@@ -352,7 +350,7 @@ public abstract class LoadBalancer {
   @Deprecated
   public void handleSubchannelState(
       Subchannel subchannel, ConnectivityStateInfo stateInfo) {
-    // Do nothing.  If the implemetation doesn't implement this, it will get subchannel states from
+    // Do nothing.  If the implementation doesn't implement this, it will get subchannel states from
     // the new API.  We don't throw because there may be forwarding LoadBalancers still plumb this.
   }
 
@@ -499,7 +497,7 @@ public abstract class LoadBalancer {
      * A decision to proceed the RPC on a Subchannel.
      *
      * <p>The Subchannel should either be an original Subchannel returned by {@link
-     * Helper#createSubchannel Helper.createSubchannel()}, or a wrapper of it preferrably based on
+     * Helper#createSubchannel Helper.createSubchannel()}, or a wrapper of it preferably based on
      * {@code ForwardingSubchannel}.  At the very least its {@link Subchannel#getInternalSubchannel
      * getInternalSubchannel()} must return the same object as the one returned by the original.
      * Otherwise the Channel cannot use it for the RPC.
@@ -1016,7 +1014,7 @@ public abstract class LoadBalancer {
 
     /**
      * Updates the addresses used for connections in the {@code Channel} that was created by {@link
-     * #createOobChannel(EquivalentAddressGroup, String)}. This is supperior to {@link
+     * #createOobChannel(EquivalentAddressGroup, String)}. This is superior to {@link
      * #createOobChannel(EquivalentAddressGroup, String)} when the old and new addresses overlap,
      * since the channel can continue using an existing connection.
      *
@@ -1034,18 +1032,50 @@ public abstract class LoadBalancer {
      * {@link ManagedChannelBuilder#forTarget} for the format of a target string.
      *
      * <p>The target string will be resolved by a {@link NameResolver} created according to the
-     * target string.  The out-of-band channel doesn't have load-balancing.  If multiple addresses
-     * are resolved for the target, the first working address will be used.
+     * target string.
      *
      * <p>The LoadBalancer is responsible for closing unused OOB channels, and closing all OOB
      * channels within {@link #shutdown}.
      *
-     * <P>NOT IMPLEMENTED: this method is currently a stub and not yet implemented by gRPC.
-     *
      * @since 1.20.0
      */
     public ManagedChannel createResolvingOobChannel(String target) {
+      return createResolvingOobChannelBuilder(target).build();
+    }
+
+    /**
+     * Creates an out-of-band channel builder for LoadBalancer's own RPC needs, e.g., talking to an
+     * external load-balancer service, that is specified by a target string.  See the documentation
+     * on {@link ManagedChannelBuilder#forTarget} for the format of a target string.
+     *
+     * <p>The target string will be resolved by a {@link NameResolver} created according to the
+     * target string.
+     *
+     * <p>The LoadBalancer is responsible for closing unused OOB channels, and closing all OOB
+     * channels within {@link #shutdown}.
+     *
+     * @since 1.31.0
+     */
+    public ManagedChannelBuilder<?> createResolvingOobChannelBuilder(String target) {
       throw new UnsupportedOperationException("Not implemented");
+    }
+
+    /**
+     * Creates an out-of-band channel builder for LoadBalancer's own RPC needs, e.g., talking to an
+     * external load-balancer service, that is specified by a target string and credentials.  See
+     * the documentation on {@link Grpc#newChannelBuilder} for the format of a target string.
+     *
+     * <p>The target string will be resolved by a {@link NameResolver} created according to the
+     * target string.
+     *
+     * <p>The LoadBalancer is responsible for closing unused OOB channels, and closing all OOB
+     * channels within {@link #shutdown}.
+     *
+     * @since 1.35.0
+     */
+    public ManagedChannelBuilder<?> createResolvingOobChannelBuilder(
+        String target, ChannelCredentials creds) {
+      throw new UnsupportedOperationException();
     }
 
     /**
@@ -1140,10 +1170,35 @@ public abstract class LoadBalancer {
 
     /**
      * Returns the authority string of the channel, which is derived from the DNS-style target name.
+     * If overridden by a load balancer, {@link #getUnsafeChannelCredentials} must also be
+     * overridden to call {@link #getChannelCredentials} or provide appropriate credentials.
      *
      * @since 1.2.0
      */
     public abstract String getAuthority();
+
+    /**
+     * Returns the ChannelCredentials used to construct the channel, without bearer tokens.
+     *
+     * @since 1.35.0
+     */
+    public ChannelCredentials getChannelCredentials() {
+      return getUnsafeChannelCredentials().withoutBearerTokens();
+    }
+
+    /**
+     * Returns the UNSAFE ChannelCredentials used to construct the channel,
+     * including bearer tokens. Load balancers should generally have no use for
+     * these credentials and use of them is heavily discouraged. These must be used
+     * <em>very</em> carefully to avoid sending bearer tokens to untrusted servers
+     * as the server could then impersonate the client. Generally it is only safe
+     * to use these credentials when communicating with the backend.
+     *
+     * @since 1.35.0
+     */
+    public ChannelCredentials getUnsafeChannelCredentials() {
+      throw new UnsupportedOperationException();
+    }
 
     /**
      * Returns the {@link ChannelLogger} for the Channel served by this LoadBalancer.

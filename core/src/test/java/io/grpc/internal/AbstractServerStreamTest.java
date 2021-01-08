@@ -57,6 +57,7 @@ public class AbstractServerStreamTest {
   private static final int TIMEOUT_MS = 1000;
   private static final int MAX_MESSAGE_SIZE = 100;
 
+  @SuppressWarnings("deprecation") // https://github.com/grpc/grpc-java/issues/7467
   @Rule public final ExpectedException thrown = ExpectedException.none();
 
   private final WritableBufferAllocator allocator = new WritableBufferAllocator() {
@@ -163,7 +164,7 @@ public class AbstractServerStreamTest {
 
     // Queue a partial message in the deframer
     stream.transportState().inboundDataReceived(ReadableBuffers.wrap(new byte[] {1}), true);
-    stream.transportState().requestMessagesFromDeframer(1);
+    stream.request(1);
 
     Status status = closedFuture.get(TIMEOUT_MS, TimeUnit.MILLISECONDS);
     assertEquals(Status.INTERNAL.getCode(), status.getCode());

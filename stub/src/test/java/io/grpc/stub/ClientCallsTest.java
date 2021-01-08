@@ -23,6 +23,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.SettableFuture;
@@ -43,6 +46,7 @@ import io.grpc.StatusRuntimeException;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.internal.NoopClientCall;
+import io.grpc.stub.ClientCalls.StubType;
 import io.grpc.stub.ServerCalls.NoopStreamObserver;
 import io.grpc.stub.ServerCalls.ServerStreamingMethod;
 import io.grpc.stub.ServerCalls.UnaryMethod;
@@ -62,6 +66,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Captor;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 /**
@@ -83,6 +91,12 @@ public class ClientCallsTest {
 
   private Server server;
   private ManagedChannel channel;
+  @Mock
+  private ManagedChannel mockChannel;
+  @Captor
+  private ArgumentCaptor<MethodDescriptor<?, ?>> methodDescriptorCaptor;
+  @Captor
+  private ArgumentCaptor<CallOptions> callOptionsCaptor;
 
   @Before
   public void setUp() {
@@ -201,6 +215,50 @@ public class ClientCallsTest {
     }
     assertTrue("onCloseCalled", interceptor.onCloseCalled);
     assertTrue("context not cancelled", methodImpl.observer.isCancelled());
+  }
+
+  @Test
+  public void blockingUnaryCall_HasBlockingStubType() {
+    NoopClientCall<Integer, Integer> call = new NoopClientCall<Integer, Integer>() {
+      @Override
+      public void start(io.grpc.ClientCall.Listener<Integer> listener, Metadata headers) {
+        listener.onMessage(1);
+        listener.onClose(Status.OK, new Metadata());
+      }
+    };
+    when(mockChannel.newCall(
+        ArgumentMatchers.<MethodDescriptor<Integer, Integer>>any(), any(CallOptions.class)))
+        .thenReturn(call);
+
+    Integer unused =
+        ClientCalls.blockingUnaryCall(mockChannel, UNARY_METHOD, CallOptions.DEFAULT, 1);
+
+    verify(mockChannel).newCall(methodDescriptorCaptor.capture(), callOptionsCaptor.capture());
+    CallOptions capturedCallOption = callOptionsCaptor.getValue();
+    assertThat(capturedCallOption.getOption(ClientCalls.STUB_TYPE_OPTION))
+        .isEquivalentAccordingToCompareTo(StubType.BLOCKING);
+  }
+
+  @Test
+  public void blockingServerStreamingCall_HasBlockingStubType() {
+    NoopClientCall<Integer, Integer> call = new NoopClientCall<Integer, Integer>() {
+      @Override
+      public void start(io.grpc.ClientCall.Listener<Integer> listener, Metadata headers) {
+        listener.onMessage(1);
+        listener.onClose(Status.OK, new Metadata());
+      }
+    };
+    when(mockChannel.newCall(
+        ArgumentMatchers.<MethodDescriptor<Integer, Integer>>any(), any(CallOptions.class)))
+        .thenReturn(call);
+
+    Iterator<Integer> unused =
+        ClientCalls.blockingServerStreamingCall(mockChannel, UNARY_METHOD, CallOptions.DEFAULT, 1);
+
+    verify(mockChannel).newCall(methodDescriptorCaptor.capture(), callOptionsCaptor.capture());
+    CallOptions capturedCallOption = callOptionsCaptor.getValue();
+    assertThat(capturedCallOption.getOption(ClientCalls.STUB_TYPE_OPTION))
+        .isEquivalentAccordingToCompareTo(StubType.BLOCKING);
   }
 
   @Test
@@ -355,13 +413,55 @@ public class ClientCallsTest {
   }
 
   @Test
+  public void disablingAutoRequestSuppressesRequests()
+      throws Exception {
+    final AtomicReference<ClientCall.Listener<String>> listener =
+        new AtomicReference<>();
+    final List<Integer> requests = new ArrayList<>();
+    NoopClientCall<Integer, String> call = new NoopClientCall<Integer, String>() {
+      @Override
+      public void start(io.grpc.ClientCall.Listener<String> responseListener, Metadata headers) {
+        listener.set(responseListener);
+      }
+
+      @Override
+      public void request(int numMessages) {
+        requests.add(numMessages);
+      }
+    };
+    ClientCalls.asyncBidiStreamingCall(call, new ClientResponseObserver<Integer, String>() {
+      @Override
+      public void beforeStart(ClientCallStreamObserver<Integer> requestStream) {
+        requestStream.disableAutoRequestWithInitial(0);
+      }
+
+      @Override
+      public void onNext(String value) {
+
+      }
+
+      @Override
+      public void onError(Throwable t) {
+
+      }
+
+      @Override
+      public void onCompleted() {
+
+      }
+    });
+    listener.get().onMessage("message");
+    assertThat(requests).isEmpty();
+  }
+
+  @Test
   public void callStreamObserverPropagatesFlowControlRequestsToCall()
       throws Exception {
     ClientResponseObserver<Integer, String> responseObserver =
         new ClientResponseObserver<Integer, String>() {
           @Override
           public void beforeStart(ClientCallStreamObserver<Integer> requestStream) {
-            requestStream.disableAutoInboundFlowControl();
+            requestStream.disableAutoRequestWithInitial(0);
           }
 
           @Override
@@ -402,26 +502,34 @@ public class ClientCallsTest {
   public void canCaptureInboundFlowControlForServerStreamingObserver()
       throws Exception {
 
-    ClientResponseObserver<Integer, String> responseObserver =
-        new ClientResponseObserver<Integer, String>() {
-          @Override
-          public void beforeStart(ClientCallStreamObserver<Integer> requestStream) {
-            requestStream.disableAutoInboundFlowControl();
-            requestStream.request(5);
-          }
+    class ResponseObserver implements ClientResponseObserver<Integer, String> {
 
-          @Override
-          public void onNext(String value) {
-          }
+      private ClientCallStreamObserver<Integer> requestStream;
 
-          @Override
-          public void onError(Throwable t) {
-          }
+      @Override
+      public void beforeStart(ClientCallStreamObserver<Integer> requestStream) {
+        this.requestStream = requestStream;
+        requestStream.disableAutoRequestWithInitial(0);
+      }
 
-          @Override
-          public void onCompleted() {
-          }
-        };
+      @Override
+      public void onNext(String value) {
+      }
+
+      @Override
+      public void onError(Throwable t) {
+      }
+
+      @Override
+      public void onCompleted() {
+      }
+
+      void request(int numMessages) {
+        requestStream.request(numMessages);
+      }
+    }
+
+    ResponseObserver responseObserver = new ResponseObserver();
     final AtomicReference<ClientCall.Listener<String>> listener =
         new AtomicReference<>();
     final List<Integer> requests = new ArrayList<>();
@@ -437,8 +545,9 @@ public class ClientCallsTest {
       }
     };
     ClientCalls.asyncServerStreamingCall(call, 1, responseObserver);
+    responseObserver.request(5);
     listener.get().onMessage("message");
-    assertThat(requests).containsExactly(5, 1).inOrder();
+    assertThat(requests).containsExactly(5).inOrder();
   }
 
   @Test
@@ -486,7 +595,7 @@ public class ClientCallsTest {
         new ClientResponseObserver<Integer, Integer>() {
           @Override
           public void beforeStart(final ClientCallStreamObserver<Integer> requestStream) {
-            requestStream.disableAutoInboundFlowControl();
+            requestStream.disableAutoRequestWithInitial(0);
           }
 
           @Override
@@ -508,14 +617,15 @@ public class ClientCallsTest {
 
     CallStreamObserver<Integer> integerStreamObserver = (CallStreamObserver<Integer>)
         ClientCalls.asyncBidiStreamingCall(clientCall, responseObserver);
-    semaphore.acquire();
+    integerStreamObserver.request(1);
+    assertTrue(semaphore.tryAcquire(5, TimeUnit.SECONDS));
     integerStreamObserver.request(2);
-    semaphore.acquire();
+    assertTrue(semaphore.tryAcquire(5, TimeUnit.SECONDS));
     integerStreamObserver.request(3);
     integerStreamObserver.onCompleted();
     assertTrue(latch.await(5, TimeUnit.SECONDS));
     // Verify that number of messages produced in each onReady handler call matches the number
-    // requested by the client. Note that ClientCalls.asyncBidiStreamingCall will request(1)
+    // requested by the client.
     assertEquals(Arrays.asList(0, 1, 1, 2, 2, 2), receivedMessages);
   }
 
@@ -533,7 +643,7 @@ public class ClientCallsTest {
               public StreamObserver<Integer> invoke(StreamObserver<Integer> responseObserver) {
                 final ServerCallStreamObserver<Integer> serverCallObserver =
                     (ServerCallStreamObserver<Integer>) responseObserver;
-                serverCallObserver.disableAutoInboundFlowControl();
+                serverCallObserver.disableAutoRequest();
                 observerFuture.set(serverCallObserver);
                 return new StreamObserver<Integer>() {
                   @Override

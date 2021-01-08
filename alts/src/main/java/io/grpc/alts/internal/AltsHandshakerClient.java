@@ -23,6 +23,7 @@ import com.google.protobuf.ByteString;
 import io.grpc.Status;
 import io.grpc.alts.internal.HandshakerServiceGrpc.HandshakerServiceStub;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
 import java.util.logging.Level;
@@ -82,6 +83,7 @@ class AltsHandshakerClient {
         startClientReq.addTargetIdentitiesBuilder().setServiceAccount(serviceAccount);
       }
     }
+    startClientReq.setMaxFrameSize(AltsTsiFrameProtector.getMaxFrameSize());
     req.setClientStart(startClientReq);
   }
 
@@ -97,6 +99,7 @@ class AltsHandshakerClient {
     if (handshakerOptions.getRpcProtocolVersions() != null) {
       startServerReq.setRpcVersions(handshakerOptions.getRpcProtocolVersions());
     }
+    startServerReq.setMaxFrameSize(AltsTsiFrameProtector.getMaxFrameSize());
     req.setServerStart(startServerReq);
   }
 
@@ -197,7 +200,7 @@ class AltsHandshakerClient {
       throw new GeneralSecurityException(e);
     }
     handleResponse(resp);
-    inBytes.position(inBytes.position() + resp.getBytesConsumed());
+    ((Buffer) inBytes).position(inBytes.position() + resp.getBytesConsumed());
     return resp.getOutFrames().asReadOnlyByteBuffer();
   }
 
@@ -225,7 +228,7 @@ class AltsHandshakerClient {
       throw new GeneralSecurityException(e);
     }
     handleResponse(resp);
-    inBytes.position(inBytes.position() + resp.getBytesConsumed());
+    ((Buffer) inBytes).position(inBytes.position() + resp.getBytesConsumed());
     return resp.getOutFrames().asReadOnlyByteBuffer();
   }
 

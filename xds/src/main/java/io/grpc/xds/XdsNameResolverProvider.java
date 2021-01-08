@@ -16,37 +16,44 @@
 
 package io.grpc.xds;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.base.Preconditions;
+import io.grpc.Internal;
 import io.grpc.NameResolver.Args;
 import io.grpc.NameResolverProvider;
+import io.grpc.internal.ObjectPool;
 import java.net.URI;
+import java.util.concurrent.atomic.AtomicLong;
+import javax.annotation.Nullable;
 
 /**
  * A provider for {@link XdsNameResolver}.
  *
- * <p>It resolves a target URI whose scheme is {@code "xds-experimental"}. The authority of the
+ * <p>It resolves a target URI whose scheme is {@code "xds"}. The authority of the
  * target URI is never used for current release. The path of the target URI, excluding the leading
  * slash {@code '/'}, will indicate the name to use in the VHDS query.
  *
  * <p>This class should not be directly referenced in code. The resolver should be accessed
- * through {@link io.grpc.NameResolverRegistry#asFactory#newNameResolver(URI, Args)} with the URI
- * scheme "xds-experimental".
+ * through {@link io.grpc.NameResolverRegistry} with the URI scheme "xds".
  */
+@Internal
 public final class XdsNameResolverProvider extends NameResolverProvider {
 
-  private static final String SCHEME = "xds-experimental";
+  private static final String SCHEME = "xds";
 
   @Override
   public XdsNameResolver newNameResolver(URI targetUri, Args args) {
     if (SCHEME.equals(targetUri.getScheme())) {
-      String targetPath = Preconditions.checkNotNull(targetUri.getPath(), "targetPath");
+      String targetPath = checkNotNull(targetUri.getPath(), "targetPath");
       Preconditions.checkArgument(
           targetPath.startsWith("/"),
           "the path component (%s) of the target (%s) must start with '/'",
           targetPath,
           targetUri);
       String name = targetPath.substring(1);
-      return new XdsNameResolver(name);
+      return new XdsNameResolver(name, args.getServiceConfigParser(),
+          args.getSynchronizationContext());
     }
     return null;
   }
@@ -66,5 +73,16 @@ public final class XdsNameResolverProvider extends NameResolverProvider {
     // Set priority value to be < 5 as we still want DNS resolver to be the primary default
     // resolver.
     return 4;
+  }
+
+  interface XdsClientPoolFactory {
+    ObjectPool<XdsClient> getXdsClientPool() throws XdsInitializationException;
+  }
+
+  /**
+   * Provides the counter for aggregating outstanding requests per cluster:eds_service_name.
+   */
+  interface CallCounterProvider {
+    AtomicLong getOrCreate(String cluster, @Nullable String edsServiceName);
   }
 }

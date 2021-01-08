@@ -115,6 +115,7 @@ class NettyServerHandler extends AbstractNettyHandler {
   private final List<? extends ServerStreamTracer.Factory> streamTracerFactories;
   private final TransportTracer transportTracer;
   private final KeepAliveEnforcer keepAliveEnforcer;
+  private final Attributes eagAttributes;
   /** Incomplete attributes produced by negotiator. */
   private Attributes negotiationAttributes;
   private InternalChannelz.Security securityInfo;
@@ -139,6 +140,7 @@ class NettyServerHandler extends AbstractNettyHandler {
       List<? extends ServerStreamTracer.Factory> streamTracerFactories,
       TransportTracer transportTracer,
       int maxStreams,
+      boolean autoFlowControl,
       int flowControlWindow,
       int maxHeaderListSize,
       int maxMessageSize,
@@ -148,7 +150,8 @@ class NettyServerHandler extends AbstractNettyHandler {
       long maxConnectionAgeInNanos,
       long maxConnectionAgeGraceInNanos,
       boolean permitKeepAliveWithoutCalls,
-      long permitKeepAliveTimeInNanos) {
+      long permitKeepAliveTimeInNanos,
+      Attributes eagAttributes) {
     Preconditions.checkArgument(maxHeaderListSize > 0, "maxHeaderListSize must be positive: %s",
         maxHeaderListSize);
     Http2FrameLogger frameLogger = new Http2FrameLogger(LogLevel.DEBUG, NettyServerHandler.class);
@@ -165,6 +168,7 @@ class NettyServerHandler extends AbstractNettyHandler {
         streamTracerFactories,
         transportTracer,
         maxStreams,
+        autoFlowControl,
         flowControlWindow,
         maxHeaderListSize,
         maxMessageSize,
@@ -174,10 +178,10 @@ class NettyServerHandler extends AbstractNettyHandler {
         maxConnectionAgeInNanos,
         maxConnectionAgeGraceInNanos,
         permitKeepAliveWithoutCalls,
-        permitKeepAliveTimeInNanos);
+        permitKeepAliveTimeInNanos,
+        eagAttributes);
   }
 
-  @VisibleForTesting
   static NettyServerHandler newHandler(
       ChannelPromise channelUnused,
       Http2FrameReader frameReader,
@@ -186,6 +190,7 @@ class NettyServerHandler extends AbstractNettyHandler {
       List<? extends ServerStreamTracer.Factory> streamTracerFactories,
       TransportTracer transportTracer,
       int maxStreams,
+      boolean autoFlowControl,
       int flowControlWindow,
       int maxHeaderListSize,
       int maxMessageSize,
@@ -195,7 +200,8 @@ class NettyServerHandler extends AbstractNettyHandler {
       long maxConnectionAgeInNanos,
       long maxConnectionAgeGraceInNanos,
       boolean permitKeepAliveWithoutCalls,
-      long permitKeepAliveTimeInNanos) {
+      long permitKeepAliveTimeInNanos,
+      Attributes eagAttributes) {
     Preconditions.checkArgument(maxStreams > 0, "maxStreams must be positive: %s", maxStreams);
     Preconditions.checkArgument(flowControlWindow > 0, "flowControlWindow must be positive: %s",
         flowControlWindow);
@@ -217,7 +223,8 @@ class NettyServerHandler extends AbstractNettyHandler {
     connection.local().flowController(
         new DefaultHttp2LocalFlowController(connection, DEFAULT_WINDOW_UPDATE_RATIO, true));
     frameWriter = new WriteMonitoringFrameWriter(frameWriter, keepAliveEnforcer);
-    Http2ConnectionEncoder encoder = new DefaultHttp2ConnectionEncoder(connection, frameWriter);
+    Http2ConnectionEncoder encoder =
+        new DefaultHttp2ConnectionEncoder(connection, frameWriter);
     encoder = new Http2ControlFrameLimitEncoder(encoder, 10000);
     Http2ConnectionDecoder decoder = new DefaultHttp2ConnectionDecoder(connection, encoder,
         frameReader);
@@ -238,7 +245,9 @@ class NettyServerHandler extends AbstractNettyHandler {
         keepAliveTimeInNanos, keepAliveTimeoutInNanos,
         maxConnectionIdleInNanos,
         maxConnectionAgeInNanos, maxConnectionAgeGraceInNanos,
-        keepAliveEnforcer);
+        keepAliveEnforcer,
+        autoFlowControl,
+        eagAttributes);
   }
 
   private NettyServerHandler(
@@ -256,8 +265,10 @@ class NettyServerHandler extends AbstractNettyHandler {
       long maxConnectionIdleInNanos,
       long maxConnectionAgeInNanos,
       long maxConnectionAgeGraceInNanos,
-      final KeepAliveEnforcer keepAliveEnforcer) {
-    super(channelUnused, decoder, encoder, settings);
+      final KeepAliveEnforcer keepAliveEnforcer,
+      boolean autoFlowControl,
+      Attributes eagAttributes) {
+    super(channelUnused, decoder, encoder, settings, autoFlowControl, null);
 
     final MaxConnectionIdleManager maxConnectionIdleManager;
     if (maxConnectionIdleInNanos == MAX_CONNECTION_IDLE_NANOS_DISABLED) {
@@ -305,6 +316,7 @@ class NettyServerHandler extends AbstractNettyHandler {
     this.maxConnectionAgeInNanos = maxConnectionAgeInNanos;
     this.maxConnectionAgeGraceInNanos = maxConnectionAgeGraceInNanos;
     this.keepAliveEnforcer = checkNotNull(keepAliveEnforcer, "keepAliveEnforcer");
+    this.eagAttributes = checkNotNull(eagAttributes, "eagAttributes");
 
     streamKey = encoder.connection().newKey();
     this.transportListener = checkNotNull(transportListener, "transportListener");
@@ -544,6 +556,11 @@ class NettyServerHandler extends AbstractNettyHandler {
     this.securityInfo = securityInfo;
     super.handleProtocolNegotiationCompleted(attrs, securityInfo);
     NettyClientHandler.writeBufferingAndRemove(ctx().channel());
+  }
+
+  @Override
+  public Attributes getEagAttributes() {
+    return eagAttributes;
   }
 
   InternalChannelz.Security getSecurityInfo() {

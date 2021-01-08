@@ -1,19 +1,6 @@
 package io.envoyproxy.envoy.service.load_stats.v2;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  */
@@ -62,7 +49,14 @@ public final class LoadReportingServiceGrpc {
    * Creates a new async stub that supports all call types for the service
    */
   public static LoadReportingServiceStub newStub(io.grpc.Channel channel) {
-    return new LoadReportingServiceStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<LoadReportingServiceStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<LoadReportingServiceStub>() {
+        @java.lang.Override
+        public LoadReportingServiceStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new LoadReportingServiceStub(channel, callOptions);
+        }
+      };
+    return LoadReportingServiceStub.newStub(factory, channel);
   }
 
   /**
@@ -70,7 +64,14 @@ public final class LoadReportingServiceGrpc {
    */
   public static LoadReportingServiceBlockingStub newBlockingStub(
       io.grpc.Channel channel) {
-    return new LoadReportingServiceBlockingStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<LoadReportingServiceBlockingStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<LoadReportingServiceBlockingStub>() {
+        @java.lang.Override
+        public LoadReportingServiceBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new LoadReportingServiceBlockingStub(channel, callOptions);
+        }
+      };
+    return LoadReportingServiceBlockingStub.newStub(factory, channel);
   }
 
   /**
@@ -78,7 +79,14 @@ public final class LoadReportingServiceGrpc {
    */
   public static LoadReportingServiceFutureStub newFutureStub(
       io.grpc.Channel channel) {
-    return new LoadReportingServiceFutureStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<LoadReportingServiceFutureStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<LoadReportingServiceFutureStub>() {
+        @java.lang.Override
+        public LoadReportingServiceFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new LoadReportingServiceFutureStub(channel, callOptions);
+        }
+      };
+    return LoadReportingServiceFutureStub.newStub(factory, channel);
   }
 
   /**
@@ -118,14 +126,14 @@ public final class LoadReportingServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.service.load_stats.v2.LoadStatsRequest> streamLoadStats(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.service.load_stats.v2.LoadStatsResponse> responseObserver) {
-      return asyncUnimplementedStreamingCall(getStreamLoadStatsMethod(), responseObserver);
+      return io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall(getStreamLoadStatsMethod(), responseObserver);
     }
 
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getStreamLoadStatsMethod(),
-            asyncBidiStreamingCall(
+            io.grpc.stub.ServerCalls.asyncBidiStreamingCall(
               new MethodHandlers<
                 io.envoyproxy.envoy.service.load_stats.v2.LoadStatsRequest,
                 io.envoyproxy.envoy.service.load_stats.v2.LoadStatsResponse>(
@@ -136,19 +144,15 @@ public final class LoadReportingServiceGrpc {
 
   /**
    */
-  public static final class LoadReportingServiceStub extends io.grpc.stub.AbstractStub<LoadReportingServiceStub> {
-    private LoadReportingServiceStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private LoadReportingServiceStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class LoadReportingServiceStub extends io.grpc.stub.AbstractAsyncStub<LoadReportingServiceStub> {
+    private LoadReportingServiceStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected LoadReportingServiceStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected LoadReportingServiceStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new LoadReportingServiceStub(channel, callOptions);
     }
 
@@ -185,45 +189,37 @@ public final class LoadReportingServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.service.load_stats.v2.LoadStatsRequest> streamLoadStats(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.service.load_stats.v2.LoadStatsResponse> responseObserver) {
-      return asyncBidiStreamingCall(
+      return io.grpc.stub.ClientCalls.asyncBidiStreamingCall(
           getChannel().newCall(getStreamLoadStatsMethod(), getCallOptions()), responseObserver);
     }
   }
 
   /**
    */
-  public static final class LoadReportingServiceBlockingStub extends io.grpc.stub.AbstractStub<LoadReportingServiceBlockingStub> {
-    private LoadReportingServiceBlockingStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private LoadReportingServiceBlockingStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class LoadReportingServiceBlockingStub extends io.grpc.stub.AbstractBlockingStub<LoadReportingServiceBlockingStub> {
+    private LoadReportingServiceBlockingStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected LoadReportingServiceBlockingStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected LoadReportingServiceBlockingStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new LoadReportingServiceBlockingStub(channel, callOptions);
     }
   }
 
   /**
    */
-  public static final class LoadReportingServiceFutureStub extends io.grpc.stub.AbstractStub<LoadReportingServiceFutureStub> {
-    private LoadReportingServiceFutureStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private LoadReportingServiceFutureStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class LoadReportingServiceFutureStub extends io.grpc.stub.AbstractFutureStub<LoadReportingServiceFutureStub> {
+    private LoadReportingServiceFutureStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected LoadReportingServiceFutureStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected LoadReportingServiceFutureStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new LoadReportingServiceFutureStub(channel, callOptions);
     }
   }

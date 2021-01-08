@@ -1,19 +1,6 @@
 package io.envoyproxy.envoy.service.discovery.v2;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  * <pre>
@@ -101,7 +88,14 @@ public final class AggregatedDiscoveryServiceGrpc {
    * Creates a new async stub that supports all call types for the service
    */
   public static AggregatedDiscoveryServiceStub newStub(io.grpc.Channel channel) {
-    return new AggregatedDiscoveryServiceStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<AggregatedDiscoveryServiceStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<AggregatedDiscoveryServiceStub>() {
+        @java.lang.Override
+        public AggregatedDiscoveryServiceStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new AggregatedDiscoveryServiceStub(channel, callOptions);
+        }
+      };
+    return AggregatedDiscoveryServiceStub.newStub(factory, channel);
   }
 
   /**
@@ -109,7 +103,14 @@ public final class AggregatedDiscoveryServiceGrpc {
    */
   public static AggregatedDiscoveryServiceBlockingStub newBlockingStub(
       io.grpc.Channel channel) {
-    return new AggregatedDiscoveryServiceBlockingStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<AggregatedDiscoveryServiceBlockingStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<AggregatedDiscoveryServiceBlockingStub>() {
+        @java.lang.Override
+        public AggregatedDiscoveryServiceBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new AggregatedDiscoveryServiceBlockingStub(channel, callOptions);
+        }
+      };
+    return AggregatedDiscoveryServiceBlockingStub.newStub(factory, channel);
   }
 
   /**
@@ -117,7 +118,14 @@ public final class AggregatedDiscoveryServiceGrpc {
    */
   public static AggregatedDiscoveryServiceFutureStub newFutureStub(
       io.grpc.Channel channel) {
-    return new AggregatedDiscoveryServiceFutureStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<AggregatedDiscoveryServiceFutureStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<AggregatedDiscoveryServiceFutureStub>() {
+        @java.lang.Override
+        public AggregatedDiscoveryServiceFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new AggregatedDiscoveryServiceFutureStub(channel, callOptions);
+        }
+      };
+    return AggregatedDiscoveryServiceFutureStub.newStub(factory, channel);
   }
 
   /**
@@ -139,28 +147,28 @@ public final class AggregatedDiscoveryServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryRequest> streamAggregatedResources(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryResponse> responseObserver) {
-      return asyncUnimplementedStreamingCall(getStreamAggregatedResourcesMethod(), responseObserver);
+      return io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall(getStreamAggregatedResourcesMethod(), responseObserver);
     }
 
     /**
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest> deltaAggregatedResources(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryResponse> responseObserver) {
-      return asyncUnimplementedStreamingCall(getDeltaAggregatedResourcesMethod(), responseObserver);
+      return io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall(getDeltaAggregatedResourcesMethod(), responseObserver);
     }
 
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getStreamAggregatedResourcesMethod(),
-            asyncBidiStreamingCall(
+            io.grpc.stub.ServerCalls.asyncBidiStreamingCall(
               new MethodHandlers<
                 io.envoyproxy.envoy.api.v2.DiscoveryRequest,
                 io.envoyproxy.envoy.api.v2.DiscoveryResponse>(
                   this, METHODID_STREAM_AGGREGATED_RESOURCES)))
           .addMethod(
             getDeltaAggregatedResourcesMethod(),
-            asyncBidiStreamingCall(
+            io.grpc.stub.ServerCalls.asyncBidiStreamingCall(
               new MethodHandlers<
                 io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest,
                 io.envoyproxy.envoy.api.v2.DeltaDiscoveryResponse>(
@@ -179,19 +187,15 @@ public final class AggregatedDiscoveryServiceGrpc {
    * the multiplexed singleton APIs at the Envoy instance and management server.
    * </pre>
    */
-  public static final class AggregatedDiscoveryServiceStub extends io.grpc.stub.AbstractStub<AggregatedDiscoveryServiceStub> {
-    private AggregatedDiscoveryServiceStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private AggregatedDiscoveryServiceStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class AggregatedDiscoveryServiceStub extends io.grpc.stub.AbstractAsyncStub<AggregatedDiscoveryServiceStub> {
+    private AggregatedDiscoveryServiceStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected AggregatedDiscoveryServiceStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected AggregatedDiscoveryServiceStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new AggregatedDiscoveryServiceStub(channel, callOptions);
     }
 
@@ -202,7 +206,7 @@ public final class AggregatedDiscoveryServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryRequest> streamAggregatedResources(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryResponse> responseObserver) {
-      return asyncBidiStreamingCall(
+      return io.grpc.stub.ClientCalls.asyncBidiStreamingCall(
           getChannel().newCall(getStreamAggregatedResourcesMethod(), getCallOptions()), responseObserver);
     }
 
@@ -210,7 +214,7 @@ public final class AggregatedDiscoveryServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest> deltaAggregatedResources(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryResponse> responseObserver) {
-      return asyncBidiStreamingCall(
+      return io.grpc.stub.ClientCalls.asyncBidiStreamingCall(
           getChannel().newCall(getDeltaAggregatedResourcesMethod(), getCallOptions()), responseObserver);
     }
   }
@@ -225,19 +229,15 @@ public final class AggregatedDiscoveryServiceGrpc {
    * the multiplexed singleton APIs at the Envoy instance and management server.
    * </pre>
    */
-  public static final class AggregatedDiscoveryServiceBlockingStub extends io.grpc.stub.AbstractStub<AggregatedDiscoveryServiceBlockingStub> {
-    private AggregatedDiscoveryServiceBlockingStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private AggregatedDiscoveryServiceBlockingStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class AggregatedDiscoveryServiceBlockingStub extends io.grpc.stub.AbstractBlockingStub<AggregatedDiscoveryServiceBlockingStub> {
+    private AggregatedDiscoveryServiceBlockingStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected AggregatedDiscoveryServiceBlockingStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected AggregatedDiscoveryServiceBlockingStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new AggregatedDiscoveryServiceBlockingStub(channel, callOptions);
     }
   }
@@ -252,19 +252,15 @@ public final class AggregatedDiscoveryServiceGrpc {
    * the multiplexed singleton APIs at the Envoy instance and management server.
    * </pre>
    */
-  public static final class AggregatedDiscoveryServiceFutureStub extends io.grpc.stub.AbstractStub<AggregatedDiscoveryServiceFutureStub> {
-    private AggregatedDiscoveryServiceFutureStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private AggregatedDiscoveryServiceFutureStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class AggregatedDiscoveryServiceFutureStub extends io.grpc.stub.AbstractFutureStub<AggregatedDiscoveryServiceFutureStub> {
+    private AggregatedDiscoveryServiceFutureStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected AggregatedDiscoveryServiceFutureStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected AggregatedDiscoveryServiceFutureStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new AggregatedDiscoveryServiceFutureStub(channel, callOptions);
     }
   }

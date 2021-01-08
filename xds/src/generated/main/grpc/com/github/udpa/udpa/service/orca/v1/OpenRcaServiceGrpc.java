@@ -1,19 +1,6 @@
 package com.github.udpa.udpa.service.orca.v1;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  * <pre>
@@ -72,7 +59,14 @@ public final class OpenRcaServiceGrpc {
    * Creates a new async stub that supports all call types for the service
    */
   public static OpenRcaServiceStub newStub(io.grpc.Channel channel) {
-    return new OpenRcaServiceStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<OpenRcaServiceStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<OpenRcaServiceStub>() {
+        @java.lang.Override
+        public OpenRcaServiceStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new OpenRcaServiceStub(channel, callOptions);
+        }
+      };
+    return OpenRcaServiceStub.newStub(factory, channel);
   }
 
   /**
@@ -80,7 +74,14 @@ public final class OpenRcaServiceGrpc {
    */
   public static OpenRcaServiceBlockingStub newBlockingStub(
       io.grpc.Channel channel) {
-    return new OpenRcaServiceBlockingStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<OpenRcaServiceBlockingStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<OpenRcaServiceBlockingStub>() {
+        @java.lang.Override
+        public OpenRcaServiceBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new OpenRcaServiceBlockingStub(channel, callOptions);
+        }
+      };
+    return OpenRcaServiceBlockingStub.newStub(factory, channel);
   }
 
   /**
@@ -88,7 +89,14 @@ public final class OpenRcaServiceGrpc {
    */
   public static OpenRcaServiceFutureStub newFutureStub(
       io.grpc.Channel channel) {
-    return new OpenRcaServiceFutureStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<OpenRcaServiceFutureStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<OpenRcaServiceFutureStub>() {
+        @java.lang.Override
+        public OpenRcaServiceFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new OpenRcaServiceFutureStub(channel, callOptions);
+        }
+      };
+    return OpenRcaServiceFutureStub.newStub(factory, channel);
   }
 
   /**
@@ -109,14 +117,14 @@ public final class OpenRcaServiceGrpc {
      */
     public void streamCoreMetrics(com.github.udpa.udpa.service.orca.v1.OrcaLoadReportRequest request,
         io.grpc.stub.StreamObserver<com.github.udpa.udpa.data.orca.v1.OrcaLoadReport> responseObserver) {
-      asyncUnimplementedUnaryCall(getStreamCoreMetricsMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getStreamCoreMetricsMethod(), responseObserver);
     }
 
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getStreamCoreMetricsMethod(),
-            asyncServerStreamingCall(
+            io.grpc.stub.ServerCalls.asyncServerStreamingCall(
               new MethodHandlers<
                 com.github.udpa.udpa.service.orca.v1.OrcaLoadReportRequest,
                 com.github.udpa.udpa.data.orca.v1.OrcaLoadReport>(
@@ -137,19 +145,15 @@ public final class OpenRcaServiceGrpc {
    * a new call to change backend reporting frequency.
    * </pre>
    */
-  public static final class OpenRcaServiceStub extends io.grpc.stub.AbstractStub<OpenRcaServiceStub> {
-    private OpenRcaServiceStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private OpenRcaServiceStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class OpenRcaServiceStub extends io.grpc.stub.AbstractAsyncStub<OpenRcaServiceStub> {
+    private OpenRcaServiceStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected OpenRcaServiceStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected OpenRcaServiceStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new OpenRcaServiceStub(channel, callOptions);
     }
 
@@ -157,7 +161,7 @@ public final class OpenRcaServiceGrpc {
      */
     public void streamCoreMetrics(com.github.udpa.udpa.service.orca.v1.OrcaLoadReportRequest request,
         io.grpc.stub.StreamObserver<com.github.udpa.udpa.data.orca.v1.OrcaLoadReport> responseObserver) {
-      asyncServerStreamingCall(
+      io.grpc.stub.ClientCalls.asyncServerStreamingCall(
           getChannel().newCall(getStreamCoreMetricsMethod(), getCallOptions()), request, responseObserver);
     }
   }
@@ -174,19 +178,15 @@ public final class OpenRcaServiceGrpc {
    * a new call to change backend reporting frequency.
    * </pre>
    */
-  public static final class OpenRcaServiceBlockingStub extends io.grpc.stub.AbstractStub<OpenRcaServiceBlockingStub> {
-    private OpenRcaServiceBlockingStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private OpenRcaServiceBlockingStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class OpenRcaServiceBlockingStub extends io.grpc.stub.AbstractBlockingStub<OpenRcaServiceBlockingStub> {
+    private OpenRcaServiceBlockingStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected OpenRcaServiceBlockingStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected OpenRcaServiceBlockingStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new OpenRcaServiceBlockingStub(channel, callOptions);
     }
 
@@ -194,7 +194,7 @@ public final class OpenRcaServiceGrpc {
      */
     public java.util.Iterator<com.github.udpa.udpa.data.orca.v1.OrcaLoadReport> streamCoreMetrics(
         com.github.udpa.udpa.service.orca.v1.OrcaLoadReportRequest request) {
-      return blockingServerStreamingCall(
+      return io.grpc.stub.ClientCalls.blockingServerStreamingCall(
           getChannel(), getStreamCoreMetricsMethod(), getCallOptions(), request);
     }
   }
@@ -211,19 +211,15 @@ public final class OpenRcaServiceGrpc {
    * a new call to change backend reporting frequency.
    * </pre>
    */
-  public static final class OpenRcaServiceFutureStub extends io.grpc.stub.AbstractStub<OpenRcaServiceFutureStub> {
-    private OpenRcaServiceFutureStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private OpenRcaServiceFutureStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class OpenRcaServiceFutureStub extends io.grpc.stub.AbstractFutureStub<OpenRcaServiceFutureStub> {
+    private OpenRcaServiceFutureStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected OpenRcaServiceFutureStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected OpenRcaServiceFutureStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new OpenRcaServiceFutureStub(channel, callOptions);
     }
   }

@@ -18,6 +18,7 @@ package io.grpc.okhttp;
 
 import static com.google.common.base.Preconditions.checkState;
 import static io.grpc.internal.GrpcUtil.TIMER_SERVICE;
+import static io.grpc.okhttp.Utils.DEFAULT_WINDOW_SIZE;
 import static io.grpc.okhttp.Utils.DEFAULT_WINDOW_UPDATE_RATIO;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -74,6 +75,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -187,7 +189,7 @@ class OkHttpClientTransport implements ConnectionClientTransport, TransportExcep
   private int maxConcurrentStreams = 0;
   @SuppressWarnings("JdkObsolete") // Usage is bursty; want low memory usage when empty
   @GuardedBy("lock")
-  private final LinkedList<OkHttpClientStream> pendingStreams = new LinkedList<>();
+  private final Deque<OkHttpClientStream> pendingStreams = new LinkedList<>();
   private final ConnectionSpec connectionSpec;
   private FrameWriter testFrameWriter;
   private ScheduledExecutorService scheduler;
@@ -424,12 +426,15 @@ class OkHttpClientTransport implements ConnectionClientTransport, TransportExcep
     }
   }
 
+  @SuppressWarnings("GuardedBy")
   @GuardedBy("lock")
   private void startStream(OkHttpClientStream stream) {
     Preconditions.checkState(
         stream.id() == OkHttpClientStream.ABSENT_ID, "StreamId already assigned");
     streams.put(nextStreamId, stream);
     setInUse(stream);
+    // TODO(b/145386688): This access should be guarded by 'stream.transportState().lock'; instead
+    // found: 'this.lock'
     stream.transportState().start(nextStreamId);
     // For unary and server streaming, there will be a data frame soon, no need to flush the header.
     if ((stream.getType() != MethodType.UNARY && stream.getType() != MethodType.SERVER_STREAMING)
@@ -485,8 +490,7 @@ class OkHttpClientTransport implements ConnectionClientTransport, TransportExcep
       synchronized (lock) {
         frameWriter = new ExceptionHandlingFrameWriter(OkHttpClientTransport.this, testFrameWriter,
             testFrameLogger);
-        outboundFlow =
-            new OutboundFlowController(OkHttpClientTransport.this, frameWriter, initialWindowSize);
+        outboundFlow = new OutboundFlowController(OkHttpClientTransport.this, frameWriter);
       }
       serializingExecutor.execute(new Runnable() {
         @Override
@@ -512,7 +516,7 @@ class OkHttpClientTransport implements ConnectionClientTransport, TransportExcep
 
     synchronized (lock) {
       frameWriter = new ExceptionHandlingFrameWriter(this, rawFrameWriter);
-      outboundFlow = new OutboundFlowController(this, frameWriter, initialWindowSize);
+      outboundFlow = new OutboundFlowController(this, frameWriter);
     }
     final CountDownLatch latch = new CountDownLatch(1);
     // Connecting in the serializingExecutor, so that some stream operations like synStream
@@ -602,11 +606,7 @@ class OkHttpClientTransport implements ConnectionClientTransport, TransportExcep
     });
     // Schedule to send connection preface & settings before any other write.
     try {
-      synchronized (lock) {
-        frameWriter.connectionPreface();
-        Settings settings = new Settings();
-        frameWriter.settings(settings);
-      }
+      sendConnectionPrefaceAndSettings();
     } finally {
       latch.countDown();
     }
@@ -624,6 +624,23 @@ class OkHttpClientTransport implements ConnectionClientTransport, TransportExcep
       }
     });
     return null;
+  }
+
+  /**
+   * Should only be called once when the transport is first established.
+   */
+  @VisibleForTesting
+  void sendConnectionPrefaceAndSettings() {
+    synchronized (lock) {
+      frameWriter.connectionPreface();
+      Settings settings = new Settings();
+      OkHttpSettingsUtil.set(settings, OkHttpSettingsUtil.INITIAL_WINDOW_SIZE, initialWindowSize);
+      frameWriter.settings(settings);
+      if (initialWindowSize > DEFAULT_WINDOW_SIZE) {
+        frameWriter.windowUpdate(
+                Utils.CONNECTION_STREAM_ID, initialWindowSize - DEFAULT_WINDOW_SIZE);
+      }
+    }
   }
 
   private Socket createHttpProxySocket(InetSocketAddress address, InetSocketAddress proxyAddress,
@@ -1111,11 +1128,12 @@ class OkHttpClientTransport implements ConnectionClientTransport, TransportExcep
     /**
      * Handle an HTTP2 DATA frame.
      */
+    @SuppressWarnings("GuardedBy")
     @Override
     public void data(boolean inFinished, int streamId, BufferedSource in, int length)
         throws IOException {
       logger.logData(OkHttpFrameLogger.Direction.INBOUND,
-          streamId, in.buffer(), length, inFinished);
+          streamId, in.getBuffer(), length, inFinished);
       OkHttpClientStream stream = getStream(streamId);
       if (stream == null) {
         if (mayHaveCreatedStream(streamId)) {
@@ -1132,10 +1150,12 @@ class OkHttpClientTransport implements ConnectionClientTransport, TransportExcep
         in.require(length);
 
         Buffer buf = new Buffer();
-        buf.write(in.buffer(), length);
+        buf.write(in.getBuffer(), length);
         PerfMark.event("OkHttpClientTransport$ClientFrameHandler.data",
             stream.transportState().tag());
         synchronized (lock) {
+          // TODO(b/145386688): This access should be guarded by 'stream.transportState().lock';
+          // instead found: 'OkHttpClientTransport.this.lock'
           stream.transportState().transportDataReceived(buf, inFinished);
         }
       }
@@ -1153,6 +1173,7 @@ class OkHttpClientTransport implements ConnectionClientTransport, TransportExcep
     /**
      * Handle HTTP2 HEADER and CONTINUATION frames.
      */
+    @SuppressWarnings("GuardedBy")
     @Override
     public void headers(boolean outFinished,
         boolean inFinished,
@@ -1186,6 +1207,8 @@ class OkHttpClientTransport implements ConnectionClientTransport, TransportExcep
           if (failedStatus == null) {
             PerfMark.event("OkHttpClientTransport$ClientFrameHandler.headers",
                 stream.transportState().tag());
+            // TODO(b/145386688): This access should be guarded by 'stream.transportState().lock';
+            // instead found: 'OkHttpClientTransport.this.lock'
             stream.transportState().transportHeadersReceived(headerBlock, inFinished);
           } else {
             if (!inFinished) {

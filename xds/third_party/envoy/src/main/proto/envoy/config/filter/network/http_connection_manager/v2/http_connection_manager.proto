@@ -2,28 +2,37 @@ syntax = "proto3";
 
 package envoy.config.filter.network.http_connection_manager.v2;
 
-option java_outer_classname = "HttpConnectionManagerProto";
-option java_multiple_files = true;
-option java_package = "io.envoyproxy.envoy.config.filter.network.http_connection_manager.v2";
-
 import "envoy/api/v2/core/config_source.proto";
 import "envoy/api/v2/core/protocol.proto";
-import "envoy/api/v2/rds.proto";
-import "envoy/api/v2/srds.proto";
+import "envoy/api/v2/route.proto";
+import "envoy/api/v2/scoped_route.proto";
 import "envoy/config/filter/accesslog/v2/accesslog.proto";
+import "envoy/config/trace/v2/http_tracer.proto";
 import "envoy/type/percent.proto";
+import "envoy/type/tracing/v2/custom_tag.proto";
 
 import "google/protobuf/any.proto";
 import "google/protobuf/duration.proto";
 import "google/protobuf/struct.proto";
 import "google/protobuf/wrappers.proto";
 
+import "envoy/annotations/deprecation.proto";
+import "udpa/annotations/migrate.proto";
+import "udpa/annotations/status.proto";
 import "validate/validate.proto";
+
+option java_package = "io.envoyproxy.envoy.config.filter.network.http_connection_manager.v2";
+option java_outer_classname = "HttpConnectionManagerProto";
+option java_multiple_files = true;
+option (udpa.annotations.file_migrate).move_to_package =
+    "envoy.extensions.filters.network.http_connection_manager.v3";
+option (udpa.annotations.file_status).package_version_status = FROZEN;
 
 // [#protodoc-title: HTTP connection manager]
 // HTTP connection manager :ref:`configuration overview <config_http_conn_man>`.
+// [#extension: envoy.filters.network.http_connection_manager]
 
-// [#comment:next free field: 35]
+// [#next-free-field: 37]
 message HttpConnectionManager {
   enum CodecType {
     // For every new connection, the connection manager will determine which
@@ -40,6 +49,11 @@ message HttpConnectionManager {
     // (Envoy does not require HTTP/2 to take place over TLS or to use ALPN.
     // Prior knowledge is allowed).
     HTTP2 = 2;
+
+    // [#not-implemented-hide:] QUIC implementation is not production ready yet. Use this enum with
+    // caution to prevent accidental execution of QUIC code. I.e. `!= HTTP2` is no longer sufficient
+    // to distinguish HTTP1 and HTTP2 traffic.
+    HTTP3 = 3;
   }
 
   enum ServerHeaderTransformation {
@@ -78,6 +92,7 @@ message HttpConnectionManager {
     ALWAYS_FORWARD_ONLY = 4;
   }
 
+  // [#next-free-field: 10]
   message Tracing {
     enum OperationName {
       // The HTTP listener is used for ingress/incoming requests.
@@ -93,13 +108,20 @@ message HttpConnectionManager {
     //
     // .. attention::
     //  This field has been deprecated in favor of `traffic_direction`.
-    OperationName operation_name = 1
-        [(validate.rules).enum = {defined_only: true}, deprecated = true];
+    OperationName operation_name = 1 [
+      deprecated = true,
+      (validate.rules).enum = {defined_only: true},
+      (envoy.annotations.disallowed_by_default) = true
+    ];
 
     // A list of header names used to create tags for the active span. The header name is used to
     // populate the tag name, and the header value is used to populate the tag value. The tag is
     // created if the specified header name is present in the request's headers.
-    repeated string request_headers_for_tags = 2;
+    //
+    // .. attention::
+    //  This field has been deprecated in favor of :ref:`custom_tags
+    //  <envoy_api_field_config.filter.network.http_connection_manager.v2.HttpConnectionManager.tracing.custom_tags>`.
+    repeated string request_headers_for_tags = 2 [deprecated = true];
 
     // Target percentage of requests managed by this HTTP connection manager that will be force
     // traced if the :ref:`x-client-trace-id <config_http_conn_man_headers_x-client-trace-id>`
@@ -134,6 +156,21 @@ message HttpConnectionManager {
     // truncate lengthy request paths to meet the needs of a tracing backend.
     // Default: 256
     google.protobuf.UInt32Value max_path_tag_length = 7;
+
+    // A list of custom tags with unique tag name to create tags for the active span.
+    repeated type.tracing.v2.CustomTag custom_tags = 8;
+
+    // Configuration for an external tracing provider.
+    // If not specified, no tracing will be performed.
+    //
+    // .. attention::
+    //   Please be aware that *envoy.tracers.opencensus* provider can only be configured once
+    //   in Envoy lifetime.
+    //   Any attempts to reconfigure it or to use different configurations for different HCM filters
+    //   will be rejected.
+    //   Such a constraint is inherent to OpenCensus itself. It cannot be overcome without changes
+    //   on OpenCensus side.
+    trace.v2.Tracing.Http provider = 9;
   }
 
   message InternalAddressConfig {
@@ -141,7 +178,7 @@ message HttpConnectionManager {
     bool unix_sockets = 1;
   }
 
-  // [#comment:next free field: 7]
+  // [#next-free-field: 7]
   message SetCurrentClientCertDetails {
     reserved 2;
 
@@ -195,7 +232,7 @@ message HttpConnectionManager {
     // Determines if upgrades are enabled or disabled by default. Defaults to true.
     // This can be overridden on a per-route basis with :ref:`cluster
     // <envoy_api_field_route.RouteAction.upgrade_configs>` as documented in the
-    // :ref:`upgrade documentation <arch_overview_websocket>`.
+    // :ref:`upgrade documentation <arch_overview_upgrades>`.
     google.protobuf.BoolValue enabled = 3;
   }
 
@@ -225,8 +262,8 @@ message HttpConnectionManager {
   }
 
   // A list of individual HTTP filters that make up the filter chain for
-  // requests made to the connection manager. Order matters as the filters are
-  // processed sequentially as request events happen.
+  // requests made to the connection manager. :ref:`Order matters <arch_overview_http_filters_ordering>`
+  // as the filters are processed sequentially as request events happen.
   repeated HttpFilter http_filters = 5;
 
   // Whether the connection manager manipulates the :ref:`config_http_conn_man_headers_user-agent`
@@ -238,6 +275,10 @@ message HttpConnectionManager {
   // emits :ref:`tracing <arch_overview_tracing>` data to the :ref:`configured tracing provider
   // <envoy_api_msg_config.trace.v2.Tracing>`.
   Tracing tracing = 7;
+
+  // Additional settings for HTTP requests handled by the connection manager. These will be
+  // applicable to both HTTP1 and HTTP2 requests.
+  api.v2.core.HttpProtocolOptions common_http_protocol_options = 35;
 
   // Additional HTTP/1 settings that are passed to the HTTP/1 codec.
   api.v2.core.Http1ProtocolOptions http_protocol_options = 8;
@@ -267,10 +308,12 @@ message HttpConnectionManager {
   // idle timeout is defined as the period in which there are no active
   // requests. If not set, there is no idle timeout. When the idle timeout is
   // reached the connection will be closed. If the connection is an HTTP/2
-  // connection a drain sequence will occur prior to closing the connection. See
-  // :ref:`drain_timeout
-  // <envoy_api_field_config.filter.network.http_connection_manager.v2.HttpConnectionManager.drain_timeout>`.
-  google.protobuf.Duration idle_timeout = 11;
+  // connection a drain sequence will occur prior to closing the connection.
+  // This field is deprecated. Use :ref:`idle_timeout
+  // <envoy_api_field_config.filter.network.http_connection_manager.v2.HttpConnectionManager.common_http_protocol_options>`
+  // instead.
+  google.protobuf.Duration idle_timeout = 11
+      [deprecated = true, (envoy.annotations.disallowed_by_default) = true];
 
   // The stream idle timeout for connections managed by the connection manager.
   // If not specified, this defaults to 5 minutes. The default value was selected
@@ -289,6 +332,16 @@ message HttpConnectionManager {
   // is terminated with a 408 Request Timeout error code if no upstream response
   // header has been received, otherwise a stream reset occurs.
   //
+  // This timeout also specifies the amount of time that Envoy will wait for the peer to open enough
+  // window to write any remaining stream data once the entirety of stream data (local end stream is
+  // true) has been buffered pending available window. In other words, this timeout defends against
+  // a peer that does not release enough window to completely write the stream, even though all
+  // data has been proxied within available flow control windows. If the timeout is hit in this
+  // case, the :ref:`tx_flush_timeout <config_http_conn_man_stats_per_codec>` counter will be
+  // incremented. Note that :ref:`max_stream_duration
+  // <envoy_api_field_core.HttpProtocolOptions.max_stream_duration>` does not apply to this corner
+  // case.
+  //
   // Note that it is possible to idle timeout even if the wire traffic for a stream is non-idle, due
   // to the granularity of events presented to the connection manager. For example, while receiving
   // very large request headers, it may be the case that there is traffic regularly arriving on the
@@ -299,7 +352,7 @@ message HttpConnectionManager {
   // timeout, although per-route idle timeout overrides will continue to apply.
   google.protobuf.Duration stream_idle_timeout = 24;
 
-  // A timeout for idle requests managed by the connection manager.
+  // The amount of time that Envoy will wait for the entire request to be received.
   // The timer is activated when the request is initiated, and is disarmed when the last byte of the
   // request is sent upstream (i.e. all decoding filters have processed the request), OR when the
   // response is initiated. If not specified or set to 0, this timeout is disabled.
@@ -340,7 +393,7 @@ message HttpConnectionManager {
   // .. NOTE::
   //    To be useful in avoiding the race condition described above, this timeout must be set
   //    to *at least* <max round trip time expected between clients and Envoy>+<100ms to account for
-  //    a reasonsable "worst" case processing time for a full iteration of Envoy's event loop>.
+  //    a reasonable "worst" case processing time for a full iteration of Envoy's event loop>.
   //
   // .. WARNING::
   //    A value of 0 will completely disable delayed close processing. When disabled, the downstream
@@ -444,18 +497,30 @@ message HttpConnectionManager {
   // true in the future. When not specified, this value may be overridden by the
   // runtime variable
   // :ref:`http_connection_manager.normalize_path<config_http_conn_man_runtime_normalize_path>`.
-  // See `Normalization and Comparison <https://tools.ietf.org/html/rfc3986#section-6>`
+  // See `Normalization and Comparison <https://tools.ietf.org/html/rfc3986#section-6>`_
   // for details of normalization.
   // Note that Envoy does not perform
-  // `case normalization <https://tools.ietf.org/html/rfc3986#section-6.2.2.1>`
+  // `case normalization <https://tools.ietf.org/html/rfc3986#section-6.2.2.1>`_
   google.protobuf.BoolValue normalize_path = 30;
 
   // Determines if adjacent slashes in the path are merged into one before any processing of
   // requests by HTTP filters or routing. This affects the upstream *:path* header as well. Without
   // setting this option, incoming requests with path `//dir///file` will not match against route
   // with `prefix` match set to `/dir`. Defaults to `false`. Note that slash merging is not part of
-  // `HTTP spec <https://tools.ietf.org/html/rfc3986>` and is provided for convenience.
+  // `HTTP spec <https://tools.ietf.org/html/rfc3986>`_ and is provided for convenience.
   bool merge_slashes = 33;
+
+  // The configuration of the request ID extension. This includes operations such as
+  // generation, validation, and associated tracing operations.
+  //
+  // If not set, Envoy uses the default UUID-based behavior:
+  //
+  // 1. Request ID is propagated using *x-request-id* header.
+  //
+  // 2. Request ID is a universally unique identifier (UUID).
+  //
+  // 3. Tracing decision (sampled, forced, etc) is set in 14th byte of the UUID.
+  RequestIDExtension request_id_extension = 36;
 }
 
 message Rds {
@@ -475,6 +540,7 @@ message ScopedRouteConfigurationsList {
       [(validate.rules).repeated = {min_items: 1}];
 }
 
+// [#next-free-field: 6]
 message ScopedRoutes {
   // Specifies the mechanism for constructing "scope keys" based on HTTP request attributes. These
   // keys are matched against a set of :ref:`Key<envoy_api_msg_ScopedRouteConfiguration.Key>`
@@ -520,6 +586,10 @@ message ScopedRoutes {
         }
 
         // The name of the header field to extract the value from.
+        //
+        // .. note::
+        //
+        //   If the header appears multiple times only the first value is used.
         string name = 1 [(validate.rules).string = {min_bytes: 1}];
 
         // The element separator (e.g., ';' separates 'a;b;c;d').
@@ -547,7 +617,9 @@ message ScopedRoutes {
       }
     }
 
-    // The final scope key consists of the ordered union of these fragments.
+    // The final(built) scope key consists of the ordered union of these fragments, which are compared in order with the
+    // fragments of a :ref:`ScopedRouteConfiguration<envoy_api_msg_ScopedRouteConfiguration>`.
+    // A missing fragment during comparison will make the key invalid, i.e., the computed key doesn't match any key.
     repeated FragmentBuilder fragments = 1 [(validate.rules).repeated = {min_items: 1}];
   }
 
@@ -597,8 +669,13 @@ message HttpFilter {
   // Filter specific configuration which depends on the filter being instantiated. See the supported
   // filters for further documentation.
   oneof config_type {
-    google.protobuf.Struct config = 2;
+    google.protobuf.Struct config = 2 [deprecated = true];
 
     google.protobuf.Any typed_config = 4;
   }
+}
+
+message RequestIDExtension {
+  // Request ID extension specific configuration.
+  google.protobuf.Any typed_config = 1;
 }

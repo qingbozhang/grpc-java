@@ -1,19 +1,6 @@
 package io.grpc.alts.internal;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  */
@@ -62,7 +49,14 @@ public final class HandshakerServiceGrpc {
    * Creates a new async stub that supports all call types for the service
    */
   public static HandshakerServiceStub newStub(io.grpc.Channel channel) {
-    return new HandshakerServiceStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<HandshakerServiceStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<HandshakerServiceStub>() {
+        @java.lang.Override
+        public HandshakerServiceStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new HandshakerServiceStub(channel, callOptions);
+        }
+      };
+    return HandshakerServiceStub.newStub(factory, channel);
   }
 
   /**
@@ -70,7 +64,14 @@ public final class HandshakerServiceGrpc {
    */
   public static HandshakerServiceBlockingStub newBlockingStub(
       io.grpc.Channel channel) {
-    return new HandshakerServiceBlockingStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<HandshakerServiceBlockingStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<HandshakerServiceBlockingStub>() {
+        @java.lang.Override
+        public HandshakerServiceBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new HandshakerServiceBlockingStub(channel, callOptions);
+        }
+      };
+    return HandshakerServiceBlockingStub.newStub(factory, channel);
   }
 
   /**
@@ -78,7 +79,14 @@ public final class HandshakerServiceGrpc {
    */
   public static HandshakerServiceFutureStub newFutureStub(
       io.grpc.Channel channel) {
-    return new HandshakerServiceFutureStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<HandshakerServiceFutureStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<HandshakerServiceFutureStub>() {
+        @java.lang.Override
+        public HandshakerServiceFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new HandshakerServiceFutureStub(channel, callOptions);
+        }
+      };
+    return HandshakerServiceFutureStub.newStub(factory, channel);
   }
 
   /**
@@ -97,14 +105,14 @@ public final class HandshakerServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.grpc.alts.internal.HandshakerReq> doHandshake(
         io.grpc.stub.StreamObserver<io.grpc.alts.internal.HandshakerResp> responseObserver) {
-      return asyncUnimplementedStreamingCall(getDoHandshakeMethod(), responseObserver);
+      return io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall(getDoHandshakeMethod(), responseObserver);
     }
 
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getDoHandshakeMethod(),
-            asyncBidiStreamingCall(
+            io.grpc.stub.ServerCalls.asyncBidiStreamingCall(
               new MethodHandlers<
                 io.grpc.alts.internal.HandshakerReq,
                 io.grpc.alts.internal.HandshakerResp>(
@@ -115,19 +123,15 @@ public final class HandshakerServiceGrpc {
 
   /**
    */
-  public static final class HandshakerServiceStub extends io.grpc.stub.AbstractStub<HandshakerServiceStub> {
-    private HandshakerServiceStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private HandshakerServiceStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class HandshakerServiceStub extends io.grpc.stub.AbstractAsyncStub<HandshakerServiceStub> {
+    private HandshakerServiceStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected HandshakerServiceStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected HandshakerServiceStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new HandshakerServiceStub(channel, callOptions);
     }
 
@@ -143,45 +147,37 @@ public final class HandshakerServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.grpc.alts.internal.HandshakerReq> doHandshake(
         io.grpc.stub.StreamObserver<io.grpc.alts.internal.HandshakerResp> responseObserver) {
-      return asyncBidiStreamingCall(
+      return io.grpc.stub.ClientCalls.asyncBidiStreamingCall(
           getChannel().newCall(getDoHandshakeMethod(), getCallOptions()), responseObserver);
     }
   }
 
   /**
    */
-  public static final class HandshakerServiceBlockingStub extends io.grpc.stub.AbstractStub<HandshakerServiceBlockingStub> {
-    private HandshakerServiceBlockingStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private HandshakerServiceBlockingStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class HandshakerServiceBlockingStub extends io.grpc.stub.AbstractBlockingStub<HandshakerServiceBlockingStub> {
+    private HandshakerServiceBlockingStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected HandshakerServiceBlockingStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected HandshakerServiceBlockingStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new HandshakerServiceBlockingStub(channel, callOptions);
     }
   }
 
   /**
    */
-  public static final class HandshakerServiceFutureStub extends io.grpc.stub.AbstractStub<HandshakerServiceFutureStub> {
-    private HandshakerServiceFutureStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private HandshakerServiceFutureStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class HandshakerServiceFutureStub extends io.grpc.stub.AbstractFutureStub<HandshakerServiceFutureStub> {
+    private HandshakerServiceFutureStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected HandshakerServiceFutureStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected HandshakerServiceFutureStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new HandshakerServiceFutureStub(channel, callOptions);
     }
   }

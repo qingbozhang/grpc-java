@@ -1,32 +1,19 @@
 package io.envoyproxy.envoy.api.v2;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  * <pre>
  * Virtual Host Discovery Service (VHDS) is used to dynamically update the list of virtual hosts for
  * a given RouteConfiguration. If VHDS is configured a virtual host list update will be triggered
  * during the processing of an HTTP request if a route for the request cannot be resolved. The
- * :ref:`resource_names_subscribe &lt;envoy_api_msg_DeltaDiscoveryRequest.resource_names_subscribe&gt;`
+ * :ref:`resource_names_subscribe &lt;envoy_api_field_DeltaDiscoveryRequest.resource_names_subscribe&gt;`
  * field contains a list of virtual host names or aliases to track. The contents of an alias would
  * be the contents of a *host* or *authority* header used to make an http request. An xDS server
  * will match an alias to a virtual host based on the content of :ref:`domains'
- * &lt;envoy_api_msg_route.VirtualHost.domains&gt;` field. The *resource_names_unsubscribe* field contains
- * a list of virtual host names that have been :ref:`unsubscribed &lt;xds_protocol_unsubscribe&gt;`
- * from the routing table associated with the RouteConfiguration.
+ * &lt;envoy_api_field_route.VirtualHost.domains&gt;` field. The *resource_names_unsubscribe* field
+ * contains a list of virtual host names that have been :ref:`unsubscribed
+ * &lt;xds_protocol_unsubscribe&gt;` from the routing table associated with the RouteConfiguration.
  * </pre>
  */
 @javax.annotation.Generated(
@@ -74,7 +61,14 @@ public final class VirtualHostDiscoveryServiceGrpc {
    * Creates a new async stub that supports all call types for the service
    */
   public static VirtualHostDiscoveryServiceStub newStub(io.grpc.Channel channel) {
-    return new VirtualHostDiscoveryServiceStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<VirtualHostDiscoveryServiceStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<VirtualHostDiscoveryServiceStub>() {
+        @java.lang.Override
+        public VirtualHostDiscoveryServiceStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new VirtualHostDiscoveryServiceStub(channel, callOptions);
+        }
+      };
+    return VirtualHostDiscoveryServiceStub.newStub(factory, channel);
   }
 
   /**
@@ -82,7 +76,14 @@ public final class VirtualHostDiscoveryServiceGrpc {
    */
   public static VirtualHostDiscoveryServiceBlockingStub newBlockingStub(
       io.grpc.Channel channel) {
-    return new VirtualHostDiscoveryServiceBlockingStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<VirtualHostDiscoveryServiceBlockingStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<VirtualHostDiscoveryServiceBlockingStub>() {
+        @java.lang.Override
+        public VirtualHostDiscoveryServiceBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new VirtualHostDiscoveryServiceBlockingStub(channel, callOptions);
+        }
+      };
+    return VirtualHostDiscoveryServiceBlockingStub.newStub(factory, channel);
   }
 
   /**
@@ -90,7 +91,14 @@ public final class VirtualHostDiscoveryServiceGrpc {
    */
   public static VirtualHostDiscoveryServiceFutureStub newFutureStub(
       io.grpc.Channel channel) {
-    return new VirtualHostDiscoveryServiceFutureStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<VirtualHostDiscoveryServiceFutureStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<VirtualHostDiscoveryServiceFutureStub>() {
+        @java.lang.Override
+        public VirtualHostDiscoveryServiceFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new VirtualHostDiscoveryServiceFutureStub(channel, callOptions);
+        }
+      };
+    return VirtualHostDiscoveryServiceFutureStub.newStub(factory, channel);
   }
 
   /**
@@ -98,13 +106,13 @@ public final class VirtualHostDiscoveryServiceGrpc {
    * Virtual Host Discovery Service (VHDS) is used to dynamically update the list of virtual hosts for
    * a given RouteConfiguration. If VHDS is configured a virtual host list update will be triggered
    * during the processing of an HTTP request if a route for the request cannot be resolved. The
-   * :ref:`resource_names_subscribe &lt;envoy_api_msg_DeltaDiscoveryRequest.resource_names_subscribe&gt;`
+   * :ref:`resource_names_subscribe &lt;envoy_api_field_DeltaDiscoveryRequest.resource_names_subscribe&gt;`
    * field contains a list of virtual host names or aliases to track. The contents of an alias would
    * be the contents of a *host* or *authority* header used to make an http request. An xDS server
    * will match an alias to a virtual host based on the content of :ref:`domains'
-   * &lt;envoy_api_msg_route.VirtualHost.domains&gt;` field. The *resource_names_unsubscribe* field contains
-   * a list of virtual host names that have been :ref:`unsubscribed &lt;xds_protocol_unsubscribe&gt;`
-   * from the routing table associated with the RouteConfiguration.
+   * &lt;envoy_api_field_route.VirtualHost.domains&gt;` field. The *resource_names_unsubscribe* field
+   * contains a list of virtual host names that have been :ref:`unsubscribed
+   * &lt;xds_protocol_unsubscribe&gt;` from the routing table associated with the RouteConfiguration.
    * </pre>
    */
   public static abstract class VirtualHostDiscoveryServiceImplBase implements io.grpc.BindableService {
@@ -113,14 +121,14 @@ public final class VirtualHostDiscoveryServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest> deltaVirtualHosts(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryResponse> responseObserver) {
-      return asyncUnimplementedStreamingCall(getDeltaVirtualHostsMethod(), responseObserver);
+      return io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall(getDeltaVirtualHostsMethod(), responseObserver);
     }
 
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getDeltaVirtualHostsMethod(),
-            asyncBidiStreamingCall(
+            io.grpc.stub.ServerCalls.asyncBidiStreamingCall(
               new MethodHandlers<
                 io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest,
                 io.envoyproxy.envoy.api.v2.DeltaDiscoveryResponse>(
@@ -134,28 +142,24 @@ public final class VirtualHostDiscoveryServiceGrpc {
    * Virtual Host Discovery Service (VHDS) is used to dynamically update the list of virtual hosts for
    * a given RouteConfiguration. If VHDS is configured a virtual host list update will be triggered
    * during the processing of an HTTP request if a route for the request cannot be resolved. The
-   * :ref:`resource_names_subscribe &lt;envoy_api_msg_DeltaDiscoveryRequest.resource_names_subscribe&gt;`
+   * :ref:`resource_names_subscribe &lt;envoy_api_field_DeltaDiscoveryRequest.resource_names_subscribe&gt;`
    * field contains a list of virtual host names or aliases to track. The contents of an alias would
    * be the contents of a *host* or *authority* header used to make an http request. An xDS server
    * will match an alias to a virtual host based on the content of :ref:`domains'
-   * &lt;envoy_api_msg_route.VirtualHost.domains&gt;` field. The *resource_names_unsubscribe* field contains
-   * a list of virtual host names that have been :ref:`unsubscribed &lt;xds_protocol_unsubscribe&gt;`
-   * from the routing table associated with the RouteConfiguration.
+   * &lt;envoy_api_field_route.VirtualHost.domains&gt;` field. The *resource_names_unsubscribe* field
+   * contains a list of virtual host names that have been :ref:`unsubscribed
+   * &lt;xds_protocol_unsubscribe&gt;` from the routing table associated with the RouteConfiguration.
    * </pre>
    */
-  public static final class VirtualHostDiscoveryServiceStub extends io.grpc.stub.AbstractStub<VirtualHostDiscoveryServiceStub> {
-    private VirtualHostDiscoveryServiceStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private VirtualHostDiscoveryServiceStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class VirtualHostDiscoveryServiceStub extends io.grpc.stub.AbstractAsyncStub<VirtualHostDiscoveryServiceStub> {
+    private VirtualHostDiscoveryServiceStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected VirtualHostDiscoveryServiceStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected VirtualHostDiscoveryServiceStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new VirtualHostDiscoveryServiceStub(channel, callOptions);
     }
 
@@ -163,7 +167,7 @@ public final class VirtualHostDiscoveryServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest> deltaVirtualHosts(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryResponse> responseObserver) {
-      return asyncBidiStreamingCall(
+      return io.grpc.stub.ClientCalls.asyncBidiStreamingCall(
           getChannel().newCall(getDeltaVirtualHostsMethod(), getCallOptions()), responseObserver);
     }
   }
@@ -173,28 +177,24 @@ public final class VirtualHostDiscoveryServiceGrpc {
    * Virtual Host Discovery Service (VHDS) is used to dynamically update the list of virtual hosts for
    * a given RouteConfiguration. If VHDS is configured a virtual host list update will be triggered
    * during the processing of an HTTP request if a route for the request cannot be resolved. The
-   * :ref:`resource_names_subscribe &lt;envoy_api_msg_DeltaDiscoveryRequest.resource_names_subscribe&gt;`
+   * :ref:`resource_names_subscribe &lt;envoy_api_field_DeltaDiscoveryRequest.resource_names_subscribe&gt;`
    * field contains a list of virtual host names or aliases to track. The contents of an alias would
    * be the contents of a *host* or *authority* header used to make an http request. An xDS server
    * will match an alias to a virtual host based on the content of :ref:`domains'
-   * &lt;envoy_api_msg_route.VirtualHost.domains&gt;` field. The *resource_names_unsubscribe* field contains
-   * a list of virtual host names that have been :ref:`unsubscribed &lt;xds_protocol_unsubscribe&gt;`
-   * from the routing table associated with the RouteConfiguration.
+   * &lt;envoy_api_field_route.VirtualHost.domains&gt;` field. The *resource_names_unsubscribe* field
+   * contains a list of virtual host names that have been :ref:`unsubscribed
+   * &lt;xds_protocol_unsubscribe&gt;` from the routing table associated with the RouteConfiguration.
    * </pre>
    */
-  public static final class VirtualHostDiscoveryServiceBlockingStub extends io.grpc.stub.AbstractStub<VirtualHostDiscoveryServiceBlockingStub> {
-    private VirtualHostDiscoveryServiceBlockingStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private VirtualHostDiscoveryServiceBlockingStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class VirtualHostDiscoveryServiceBlockingStub extends io.grpc.stub.AbstractBlockingStub<VirtualHostDiscoveryServiceBlockingStub> {
+    private VirtualHostDiscoveryServiceBlockingStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected VirtualHostDiscoveryServiceBlockingStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected VirtualHostDiscoveryServiceBlockingStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new VirtualHostDiscoveryServiceBlockingStub(channel, callOptions);
     }
   }
@@ -204,28 +204,24 @@ public final class VirtualHostDiscoveryServiceGrpc {
    * Virtual Host Discovery Service (VHDS) is used to dynamically update the list of virtual hosts for
    * a given RouteConfiguration. If VHDS is configured a virtual host list update will be triggered
    * during the processing of an HTTP request if a route for the request cannot be resolved. The
-   * :ref:`resource_names_subscribe &lt;envoy_api_msg_DeltaDiscoveryRequest.resource_names_subscribe&gt;`
+   * :ref:`resource_names_subscribe &lt;envoy_api_field_DeltaDiscoveryRequest.resource_names_subscribe&gt;`
    * field contains a list of virtual host names or aliases to track. The contents of an alias would
    * be the contents of a *host* or *authority* header used to make an http request. An xDS server
    * will match an alias to a virtual host based on the content of :ref:`domains'
-   * &lt;envoy_api_msg_route.VirtualHost.domains&gt;` field. The *resource_names_unsubscribe* field contains
-   * a list of virtual host names that have been :ref:`unsubscribed &lt;xds_protocol_unsubscribe&gt;`
-   * from the routing table associated with the RouteConfiguration.
+   * &lt;envoy_api_field_route.VirtualHost.domains&gt;` field. The *resource_names_unsubscribe* field
+   * contains a list of virtual host names that have been :ref:`unsubscribed
+   * &lt;xds_protocol_unsubscribe&gt;` from the routing table associated with the RouteConfiguration.
    * </pre>
    */
-  public static final class VirtualHostDiscoveryServiceFutureStub extends io.grpc.stub.AbstractStub<VirtualHostDiscoveryServiceFutureStub> {
-    private VirtualHostDiscoveryServiceFutureStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private VirtualHostDiscoveryServiceFutureStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class VirtualHostDiscoveryServiceFutureStub extends io.grpc.stub.AbstractFutureStub<VirtualHostDiscoveryServiceFutureStub> {
+    private VirtualHostDiscoveryServiceFutureStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected VirtualHostDiscoveryServiceFutureStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected VirtualHostDiscoveryServiceFutureStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new VirtualHostDiscoveryServiceFutureStub(channel, callOptions);
     }
   }

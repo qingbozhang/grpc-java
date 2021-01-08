@@ -1,19 +1,6 @@
 package io.grpc.benchmarks.proto;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  */
@@ -62,7 +49,14 @@ public final class ReportQpsScenarioServiceGrpc {
    * Creates a new async stub that supports all call types for the service
    */
   public static ReportQpsScenarioServiceStub newStub(io.grpc.Channel channel) {
-    return new ReportQpsScenarioServiceStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<ReportQpsScenarioServiceStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<ReportQpsScenarioServiceStub>() {
+        @java.lang.Override
+        public ReportQpsScenarioServiceStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new ReportQpsScenarioServiceStub(channel, callOptions);
+        }
+      };
+    return ReportQpsScenarioServiceStub.newStub(factory, channel);
   }
 
   /**
@@ -70,7 +64,14 @@ public final class ReportQpsScenarioServiceGrpc {
    */
   public static ReportQpsScenarioServiceBlockingStub newBlockingStub(
       io.grpc.Channel channel) {
-    return new ReportQpsScenarioServiceBlockingStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<ReportQpsScenarioServiceBlockingStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<ReportQpsScenarioServiceBlockingStub>() {
+        @java.lang.Override
+        public ReportQpsScenarioServiceBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new ReportQpsScenarioServiceBlockingStub(channel, callOptions);
+        }
+      };
+    return ReportQpsScenarioServiceBlockingStub.newStub(factory, channel);
   }
 
   /**
@@ -78,7 +79,14 @@ public final class ReportQpsScenarioServiceGrpc {
    */
   public static ReportQpsScenarioServiceFutureStub newFutureStub(
       io.grpc.Channel channel) {
-    return new ReportQpsScenarioServiceFutureStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<ReportQpsScenarioServiceFutureStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<ReportQpsScenarioServiceFutureStub>() {
+        @java.lang.Override
+        public ReportQpsScenarioServiceFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new ReportQpsScenarioServiceFutureStub(channel, callOptions);
+        }
+      };
+    return ReportQpsScenarioServiceFutureStub.newStub(factory, channel);
   }
 
   /**
@@ -92,14 +100,14 @@ public final class ReportQpsScenarioServiceGrpc {
      */
     public void reportScenario(io.grpc.benchmarks.proto.Control.ScenarioResult request,
         io.grpc.stub.StreamObserver<io.grpc.benchmarks.proto.Control.Void> responseObserver) {
-      asyncUnimplementedUnaryCall(getReportScenarioMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getReportScenarioMethod(), responseObserver);
     }
 
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getReportScenarioMethod(),
-            asyncUnaryCall(
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 io.grpc.benchmarks.proto.Control.ScenarioResult,
                 io.grpc.benchmarks.proto.Control.Void>(
@@ -110,19 +118,15 @@ public final class ReportQpsScenarioServiceGrpc {
 
   /**
    */
-  public static final class ReportQpsScenarioServiceStub extends io.grpc.stub.AbstractStub<ReportQpsScenarioServiceStub> {
-    private ReportQpsScenarioServiceStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private ReportQpsScenarioServiceStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class ReportQpsScenarioServiceStub extends io.grpc.stub.AbstractAsyncStub<ReportQpsScenarioServiceStub> {
+    private ReportQpsScenarioServiceStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected ReportQpsScenarioServiceStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected ReportQpsScenarioServiceStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new ReportQpsScenarioServiceStub(channel, callOptions);
     }
 
@@ -133,26 +137,22 @@ public final class ReportQpsScenarioServiceGrpc {
      */
     public void reportScenario(io.grpc.benchmarks.proto.Control.ScenarioResult request,
         io.grpc.stub.StreamObserver<io.grpc.benchmarks.proto.Control.Void> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getReportScenarioMethod(), getCallOptions()), request, responseObserver);
     }
   }
 
   /**
    */
-  public static final class ReportQpsScenarioServiceBlockingStub extends io.grpc.stub.AbstractStub<ReportQpsScenarioServiceBlockingStub> {
-    private ReportQpsScenarioServiceBlockingStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private ReportQpsScenarioServiceBlockingStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class ReportQpsScenarioServiceBlockingStub extends io.grpc.stub.AbstractBlockingStub<ReportQpsScenarioServiceBlockingStub> {
+    private ReportQpsScenarioServiceBlockingStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected ReportQpsScenarioServiceBlockingStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected ReportQpsScenarioServiceBlockingStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new ReportQpsScenarioServiceBlockingStub(channel, callOptions);
     }
 
@@ -162,26 +162,22 @@ public final class ReportQpsScenarioServiceGrpc {
      * </pre>
      */
     public io.grpc.benchmarks.proto.Control.Void reportScenario(io.grpc.benchmarks.proto.Control.ScenarioResult request) {
-      return blockingUnaryCall(
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getReportScenarioMethod(), getCallOptions(), request);
     }
   }
 
   /**
    */
-  public static final class ReportQpsScenarioServiceFutureStub extends io.grpc.stub.AbstractStub<ReportQpsScenarioServiceFutureStub> {
-    private ReportQpsScenarioServiceFutureStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private ReportQpsScenarioServiceFutureStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class ReportQpsScenarioServiceFutureStub extends io.grpc.stub.AbstractFutureStub<ReportQpsScenarioServiceFutureStub> {
+    private ReportQpsScenarioServiceFutureStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected ReportQpsScenarioServiceFutureStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected ReportQpsScenarioServiceFutureStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new ReportQpsScenarioServiceFutureStub(channel, callOptions);
     }
 
@@ -192,7 +188,7 @@ public final class ReportQpsScenarioServiceGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<io.grpc.benchmarks.proto.Control.Void> reportScenario(
         io.grpc.benchmarks.proto.Control.ScenarioResult request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getReportScenarioMethod(), getCallOptions()), request);
     }
   }

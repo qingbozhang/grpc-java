@@ -1,24 +1,9 @@
 package io.envoyproxy.envoy.api.v2;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
-import static io.grpc.stub.ClientCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ClientCalls.asyncUnaryCall;
-import static io.grpc.stub.ClientCalls.blockingServerStreamingCall;
-import static io.grpc.stub.ClientCalls.blockingUnaryCall;
-import static io.grpc.stub.ClientCalls.futureUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncBidiStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncClientStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncServerStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnaryCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall;
-import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  * <pre>
- * [#protodoc-title: HTTP scoped routing configuration]
- * * Routing :ref:`architecture overview &lt;arch_overview_http_routing&gt;`
  * The Scoped Routes Discovery Service (SRDS) API distributes
  * :ref:`ScopedRouteConfiguration&lt;envoy_api_msg.ScopedRouteConfiguration&gt;`
  * resources. Each ScopedRouteConfiguration resource represents a "routing
@@ -135,7 +120,14 @@ public final class ScopedRoutesDiscoveryServiceGrpc {
    * Creates a new async stub that supports all call types for the service
    */
   public static ScopedRoutesDiscoveryServiceStub newStub(io.grpc.Channel channel) {
-    return new ScopedRoutesDiscoveryServiceStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<ScopedRoutesDiscoveryServiceStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<ScopedRoutesDiscoveryServiceStub>() {
+        @java.lang.Override
+        public ScopedRoutesDiscoveryServiceStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new ScopedRoutesDiscoveryServiceStub(channel, callOptions);
+        }
+      };
+    return ScopedRoutesDiscoveryServiceStub.newStub(factory, channel);
   }
 
   /**
@@ -143,7 +135,14 @@ public final class ScopedRoutesDiscoveryServiceGrpc {
    */
   public static ScopedRoutesDiscoveryServiceBlockingStub newBlockingStub(
       io.grpc.Channel channel) {
-    return new ScopedRoutesDiscoveryServiceBlockingStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<ScopedRoutesDiscoveryServiceBlockingStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<ScopedRoutesDiscoveryServiceBlockingStub>() {
+        @java.lang.Override
+        public ScopedRoutesDiscoveryServiceBlockingStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new ScopedRoutesDiscoveryServiceBlockingStub(channel, callOptions);
+        }
+      };
+    return ScopedRoutesDiscoveryServiceBlockingStub.newStub(factory, channel);
   }
 
   /**
@@ -151,13 +150,18 @@ public final class ScopedRoutesDiscoveryServiceGrpc {
    */
   public static ScopedRoutesDiscoveryServiceFutureStub newFutureStub(
       io.grpc.Channel channel) {
-    return new ScopedRoutesDiscoveryServiceFutureStub(channel);
+    io.grpc.stub.AbstractStub.StubFactory<ScopedRoutesDiscoveryServiceFutureStub> factory =
+      new io.grpc.stub.AbstractStub.StubFactory<ScopedRoutesDiscoveryServiceFutureStub>() {
+        @java.lang.Override
+        public ScopedRoutesDiscoveryServiceFutureStub newStub(io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
+          return new ScopedRoutesDiscoveryServiceFutureStub(channel, callOptions);
+        }
+      };
+    return ScopedRoutesDiscoveryServiceFutureStub.newStub(factory, channel);
   }
 
   /**
    * <pre>
-   * [#protodoc-title: HTTP scoped routing configuration]
-   * * Routing :ref:`architecture overview &lt;arch_overview_http_routing&gt;`
    * The Scoped Routes Discovery Service (SRDS) API distributes
    * :ref:`ScopedRouteConfiguration&lt;envoy_api_msg.ScopedRouteConfiguration&gt;`
    * resources. Each ScopedRouteConfiguration resource represents a "routing
@@ -173,42 +177,42 @@ public final class ScopedRoutesDiscoveryServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryRequest> streamScopedRoutes(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryResponse> responseObserver) {
-      return asyncUnimplementedStreamingCall(getStreamScopedRoutesMethod(), responseObserver);
+      return io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall(getStreamScopedRoutesMethod(), responseObserver);
     }
 
     /**
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest> deltaScopedRoutes(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryResponse> responseObserver) {
-      return asyncUnimplementedStreamingCall(getDeltaScopedRoutesMethod(), responseObserver);
+      return io.grpc.stub.ServerCalls.asyncUnimplementedStreamingCall(getDeltaScopedRoutesMethod(), responseObserver);
     }
 
     /**
      */
     public void fetchScopedRoutes(io.envoyproxy.envoy.api.v2.DiscoveryRequest request,
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryResponse> responseObserver) {
-      asyncUnimplementedUnaryCall(getFetchScopedRoutesMethod(), responseObserver);
+      io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getFetchScopedRoutesMethod(), responseObserver);
     }
 
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
             getStreamScopedRoutesMethod(),
-            asyncBidiStreamingCall(
+            io.grpc.stub.ServerCalls.asyncBidiStreamingCall(
               new MethodHandlers<
                 io.envoyproxy.envoy.api.v2.DiscoveryRequest,
                 io.envoyproxy.envoy.api.v2.DiscoveryResponse>(
                   this, METHODID_STREAM_SCOPED_ROUTES)))
           .addMethod(
             getDeltaScopedRoutesMethod(),
-            asyncBidiStreamingCall(
+            io.grpc.stub.ServerCalls.asyncBidiStreamingCall(
               new MethodHandlers<
                 io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest,
                 io.envoyproxy.envoy.api.v2.DeltaDiscoveryResponse>(
                   this, METHODID_DELTA_SCOPED_ROUTES)))
           .addMethod(
             getFetchScopedRoutesMethod(),
-            asyncUnaryCall(
+            io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
                 io.envoyproxy.envoy.api.v2.DiscoveryRequest,
                 io.envoyproxy.envoy.api.v2.DiscoveryResponse>(
@@ -219,8 +223,6 @@ public final class ScopedRoutesDiscoveryServiceGrpc {
 
   /**
    * <pre>
-   * [#protodoc-title: HTTP scoped routing configuration]
-   * * Routing :ref:`architecture overview &lt;arch_overview_http_routing&gt;`
    * The Scoped Routes Discovery Service (SRDS) API distributes
    * :ref:`ScopedRouteConfiguration&lt;envoy_api_msg.ScopedRouteConfiguration&gt;`
    * resources. Each ScopedRouteConfiguration resource represents a "routing
@@ -230,19 +232,15 @@ public final class ScopedRoutesDiscoveryServiceGrpc {
    * HTTP request.
    * </pre>
    */
-  public static final class ScopedRoutesDiscoveryServiceStub extends io.grpc.stub.AbstractStub<ScopedRoutesDiscoveryServiceStub> {
-    private ScopedRoutesDiscoveryServiceStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private ScopedRoutesDiscoveryServiceStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class ScopedRoutesDiscoveryServiceStub extends io.grpc.stub.AbstractAsyncStub<ScopedRoutesDiscoveryServiceStub> {
+    private ScopedRoutesDiscoveryServiceStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected ScopedRoutesDiscoveryServiceStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected ScopedRoutesDiscoveryServiceStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new ScopedRoutesDiscoveryServiceStub(channel, callOptions);
     }
 
@@ -250,7 +248,7 @@ public final class ScopedRoutesDiscoveryServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryRequest> streamScopedRoutes(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryResponse> responseObserver) {
-      return asyncBidiStreamingCall(
+      return io.grpc.stub.ClientCalls.asyncBidiStreamingCall(
           getChannel().newCall(getStreamScopedRoutesMethod(), getCallOptions()), responseObserver);
     }
 
@@ -258,7 +256,7 @@ public final class ScopedRoutesDiscoveryServiceGrpc {
      */
     public io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryRequest> deltaScopedRoutes(
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DeltaDiscoveryResponse> responseObserver) {
-      return asyncBidiStreamingCall(
+      return io.grpc.stub.ClientCalls.asyncBidiStreamingCall(
           getChannel().newCall(getDeltaScopedRoutesMethod(), getCallOptions()), responseObserver);
     }
 
@@ -266,15 +264,13 @@ public final class ScopedRoutesDiscoveryServiceGrpc {
      */
     public void fetchScopedRoutes(io.envoyproxy.envoy.api.v2.DiscoveryRequest request,
         io.grpc.stub.StreamObserver<io.envoyproxy.envoy.api.v2.DiscoveryResponse> responseObserver) {
-      asyncUnaryCall(
+      io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getFetchScopedRoutesMethod(), getCallOptions()), request, responseObserver);
     }
   }
 
   /**
    * <pre>
-   * [#protodoc-title: HTTP scoped routing configuration]
-   * * Routing :ref:`architecture overview &lt;arch_overview_http_routing&gt;`
    * The Scoped Routes Discovery Service (SRDS) API distributes
    * :ref:`ScopedRouteConfiguration&lt;envoy_api_msg.ScopedRouteConfiguration&gt;`
    * resources. Each ScopedRouteConfiguration resource represents a "routing
@@ -284,34 +280,28 @@ public final class ScopedRoutesDiscoveryServiceGrpc {
    * HTTP request.
    * </pre>
    */
-  public static final class ScopedRoutesDiscoveryServiceBlockingStub extends io.grpc.stub.AbstractStub<ScopedRoutesDiscoveryServiceBlockingStub> {
-    private ScopedRoutesDiscoveryServiceBlockingStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private ScopedRoutesDiscoveryServiceBlockingStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class ScopedRoutesDiscoveryServiceBlockingStub extends io.grpc.stub.AbstractBlockingStub<ScopedRoutesDiscoveryServiceBlockingStub> {
+    private ScopedRoutesDiscoveryServiceBlockingStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected ScopedRoutesDiscoveryServiceBlockingStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected ScopedRoutesDiscoveryServiceBlockingStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new ScopedRoutesDiscoveryServiceBlockingStub(channel, callOptions);
     }
 
     /**
      */
     public io.envoyproxy.envoy.api.v2.DiscoveryResponse fetchScopedRoutes(io.envoyproxy.envoy.api.v2.DiscoveryRequest request) {
-      return blockingUnaryCall(
+      return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getFetchScopedRoutesMethod(), getCallOptions(), request);
     }
   }
 
   /**
    * <pre>
-   * [#protodoc-title: HTTP scoped routing configuration]
-   * * Routing :ref:`architecture overview &lt;arch_overview_http_routing&gt;`
    * The Scoped Routes Discovery Service (SRDS) API distributes
    * :ref:`ScopedRouteConfiguration&lt;envoy_api_msg.ScopedRouteConfiguration&gt;`
    * resources. Each ScopedRouteConfiguration resource represents a "routing
@@ -321,19 +311,15 @@ public final class ScopedRoutesDiscoveryServiceGrpc {
    * HTTP request.
    * </pre>
    */
-  public static final class ScopedRoutesDiscoveryServiceFutureStub extends io.grpc.stub.AbstractStub<ScopedRoutesDiscoveryServiceFutureStub> {
-    private ScopedRoutesDiscoveryServiceFutureStub(io.grpc.Channel channel) {
-      super(channel);
-    }
-
-    private ScopedRoutesDiscoveryServiceFutureStub(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+  public static final class ScopedRoutesDiscoveryServiceFutureStub extends io.grpc.stub.AbstractFutureStub<ScopedRoutesDiscoveryServiceFutureStub> {
+    private ScopedRoutesDiscoveryServiceFutureStub(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       super(channel, callOptions);
     }
 
     @java.lang.Override
-    protected ScopedRoutesDiscoveryServiceFutureStub build(io.grpc.Channel channel,
-        io.grpc.CallOptions callOptions) {
+    protected ScopedRoutesDiscoveryServiceFutureStub build(
+        io.grpc.Channel channel, io.grpc.CallOptions callOptions) {
       return new ScopedRoutesDiscoveryServiceFutureStub(channel, callOptions);
     }
 
@@ -341,7 +327,7 @@ public final class ScopedRoutesDiscoveryServiceGrpc {
      */
     public com.google.common.util.concurrent.ListenableFuture<io.envoyproxy.envoy.api.v2.DiscoveryResponse> fetchScopedRoutes(
         io.envoyproxy.envoy.api.v2.DiscoveryRequest request) {
-      return futureUnaryCall(
+      return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getFetchScopedRoutesMethod(), getCallOptions()), request);
     }
   }

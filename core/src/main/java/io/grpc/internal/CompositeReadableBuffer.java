@@ -18,6 +18,7 @@ package io.grpc.internal;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
 import java.util.Queue;
@@ -106,11 +107,11 @@ public class CompositeReadableBuffer extends AbstractReadableBuffer {
       public int readInternal(ReadableBuffer buffer, int length) {
         // Change the limit so that only lengthToCopy bytes are available.
         int prevLimit = dest.limit();
-        dest.limit(dest.position() + length);
+        ((Buffer) dest).limit(dest.position() + length);
 
         // Write the bytes and restore the original limit.
         buffer.readBytes(dest);
-        dest.limit(prevLimit);
+        ((Buffer) dest).limit(prevLimit);
         return 0;
       }
     }, dest.remaining());
